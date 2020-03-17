@@ -3,6 +3,8 @@
 
 // For example, to shim modules without declarations, use:
 // declare module 'package-without-declarations';
+declare module '@deck.gl/layers';
+declare module '@deck.gl/react';
 
 // And to shim assets, use (one file extension per `declare`):
 // declare module '*.png';
