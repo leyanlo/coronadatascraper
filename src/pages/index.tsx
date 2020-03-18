@@ -185,7 +185,7 @@ export default function IndexPage(): JSX.Element {
             id={countrySelectUid}
             defaultValue={country.Slug}
             css={css`
-              min-width: 256px;
+              max-width: 200px;
             `}
             onChange={({ target: { value } }) => {
               setCountry(countries[value]);
