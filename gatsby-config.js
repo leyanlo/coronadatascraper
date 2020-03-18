@@ -13,9 +13,9 @@ module.exports = {
       options: {
         ...siteMetadata,
         display: 'minimal-ui',
-        theme_color: '#663399',
+        theme_color: '#ff4f7a',
         background_color: 'white',
-        icon: 'src/assets/favicon.png',
+        icon: 'src/assets/logo.svg',
         lang: 'en-US',
         start_url: '/',
       },

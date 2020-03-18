@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
+import Logo from '../assets/logo.svg';
 import { Layout } from '../components/Layout';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
@@ -70,6 +71,14 @@ export default function IndexPage(): JSX.Element {
             margin-top: 0;
           `}
         >
+          <img
+            src={Logo}
+            alt="covid19api logo"
+            css={css`
+              width: 1em;
+              height: 1em;
+            `}
+          />{' '}
           <a
             href="https://covid19api.com/"
             target="_blank"
