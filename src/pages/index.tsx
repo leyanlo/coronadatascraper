@@ -187,6 +187,9 @@ export default function IndexPage(): JSX.Element {
             css={css`
               min-width: 256px;
             `}
+            onChange={({ target: { value } }) => {
+              setCountry(countries[value]);
+            }}
           >
             {Object.keys(countries).map(k => (
               <option value={k} key={k}>
