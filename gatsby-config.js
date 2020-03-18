@@ -1,7 +1,7 @@
 const siteMetadata = {
-  name: 'Gatsby Strict Starter',
+  name: 'covid19api demo',
   description:
-    'Demo for a Gatsby starter with strict linting and auto-formatting rules.',
+    'Demo for covid19api.',
 };
 
 module.exports = {
