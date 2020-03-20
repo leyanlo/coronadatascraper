@@ -361,7 +361,7 @@ export default function IndexPage(): JSX.Element {
           >
             covid19api
           </a>{' '}
-          demo
+          map
         </h2>
         <label htmlFor={countrySelectUid}>
           Select country:{' '}
