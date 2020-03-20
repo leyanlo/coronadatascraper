@@ -1,7 +1,6 @@
 const siteMetadata = {
   name: 'covid19api map',
-  description:
-    'Map created using covid19api.',
+  description: 'Map created using covid19api.',
 };
 
 module.exports = {
@@ -23,5 +22,13 @@ module.exports = {
     'gatsby-plugin-react-helmet',
     'gatsby-plugin-typescript',
     'gatsby-plugin-offline',
+    {
+      resolve: `gatsby-plugin-google-analytics`,
+      options: {
+        trackingId: 'UA-126651057-3',
+        head: true,
+        respectDNT: true,
+      },
+    },
   ],
 };
