@@ -6,6 +6,7 @@ import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
 import Logo from '../assets/logo.svg';
+import Octicon from '../assets/octicon.svg';
 import { Layout } from '../components/Layout';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
@@ -184,6 +185,20 @@ const covid19DataReducer = (
   return { ...covid19Data };
 };
 
+const linkCss = css`
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: text-top;
+`;
+
+const linkIconCss = css`
+  width: 100%;
+  height: 100%;
+  display: block;
+`;
+
 export default function IndexPage(): JSX.Element {
   const [countries, setCountries] = useState<{ [Slug: string]: Country }>({
     us: US,
@@ -341,35 +356,45 @@ export default function IndexPage(): JSX.Element {
           background: #fffc;
         `}
       >
-        <h2
+        <h1
           css={css`
+            font-size: 20px;
             margin-top: 0;
           `}
         >
-          <img
-            src={Logo}
-            alt="covid19api logo"
+          COVID-19 Map
+          <div
             css={css`
-              width: 1em;
-              height: 1em;
+              float: right;
             `}
-          />{' '}
-          <a
-            href="https://covid19api.com/"
-            target="_blank"
-            rel="noopener noreferrer"
           >
-            covid19api
-          </a>{' '}
-          map
-        </h2>
+            <a
+              href="https://covid19api.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              css={linkCss}
+              title="data"
+            >
+              <img src={Logo} alt="covid19api logo" css={linkIconCss} />
+            </a>
+            <a
+              href="https://github.com/leyanlo/covid19api"
+              target="_blank"
+              rel="noopener noreferrer"
+              css={linkCss}
+              title="code"
+            >
+              <img src={Octicon} alt="GitHub logo" css={linkIconCss} />
+            </a>
+          </div>
+        </h1>
         <label htmlFor={countrySelectUid}>
           Select country:{' '}
           <select
             id={countrySelectUid}
             defaultValue={country.Slug}
             css={css`
-              max-width: 192px;
+              max-width: 128px;
             `}
             onChange={({ target: { value } }) => {
               setCountry(countries[value]);
