@@ -31,12 +31,7 @@ export function Layout({ children }: LayoutProps): JSX.Element {
       >
         <meta name="description" content={data.site.siteMetadata.description} />
       </Helmet>
-
-      <header>{/* TODO */}</header>
-
       <main>{children}</main>
-
-      <footer>{/* TODO */}</footer>
     </React.StrictMode>
   );
 }
