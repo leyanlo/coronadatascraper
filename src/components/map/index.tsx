@@ -8,6 +8,7 @@ import { useUID } from 'react-uid';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
 import { Status, STATUSES } from './constants';
+import { linkCss, linkIconCss } from './css';
 import { ProvinceTooltip, SelectedProvince } from './ProvinceTooltip';
 import { Province } from './types';
 
@@ -110,20 +111,6 @@ const covid19DataReducer = (
   }
   return { ...covid19Data };
 };
-
-const linkCss = css`
-  margin-left: 8px;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  vertical-align: text-top;
-`;
-
-const linkIconCss = css`
-  width: 100%;
-  height: 100%;
-  display: block;
-`;
 
 export default (): JSX.Element => {
   const [countries, setCountries] = useState<{ [Slug: string]: Country }>({
