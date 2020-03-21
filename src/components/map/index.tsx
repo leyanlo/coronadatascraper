@@ -4,7 +4,12 @@ import { css } from '@emotion/core';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
-import { StringParam, useQueryParam } from 'use-query-params';
+import {
+  NumberParam,
+  StringParam,
+  useQueryParam,
+  useQueryParams,
+} from 'use-query-params';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
@@ -89,6 +94,12 @@ const covid19DataReducer = (
 
 export default (): JSX.Element | null => {
   const [countryQuery, setCountryQuery] = useQueryParam('country', StringParam);
+  const [viewStateQuery, setViewStateQuery] = useQueryParams({
+    longitude: NumberParam,
+    latitude: NumberParam,
+    zoom: NumberParam,
+  });
+
   const [country, setCountry] = useState<string>(countryQuery || 'us');
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
@@ -124,6 +135,7 @@ export default (): JSX.Element | null => {
     });
   }, [covid19Data, country]);
 
+  // noinspection JSUnusedGlobalSymbols
   const confirmedLayer = useMemo(
     () =>
       !covid19Data[country]
@@ -202,8 +214,8 @@ export default (): JSX.Element | null => {
                 LINE_WIDTH_MAX_PIXELS /
                 Math.max(LINE_WIDTH_MAX_PIXELS, confirmedLineWidth);
 
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               return (
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 clampedRatio * Math.sqrt(d.data[d.maxDates.deaths!].deaths!)
               );
             },
@@ -215,9 +227,30 @@ export default (): JSX.Element | null => {
   return (
     <>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={{
+          ...INITIAL_VIEW_STATE,
+          ...(Object.keys(
+            viewStateQuery,
+          ) as (keyof typeof viewStateQuery)[]).reduce((acc, field) => {
+            if (viewStateQuery[field] !== undefined) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+              // @ts-ignore
+              acc[field] = viewStateQuery[field];
+            }
+            return acc;
+          }, {}),
+        }}
         controller
         layers={[confirmedLayer, deathsLayer]}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        onViewStateChange={({ viewState: { longitude, latitude, zoom } }) => {
+          setViewStateQuery({
+            longitude,
+            latitude,
+            zoom,
+          });
+        }}
       >
         <StaticMap
           mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
