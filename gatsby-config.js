@@ -1,5 +1,5 @@
 const siteMetadata = {
-  name: 'COVID-19 map',
+  name: 'COVID-19 Map',
   description: 'COVID-19 map created using covid19api.',
 };
 

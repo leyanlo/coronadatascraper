@@ -1,5 +1,5 @@
 {
-  "name": "gatsby-starter-strict",
+  "name": "covid19-map",
   "private": true,
   "scripts": {
     "build": "gatsby build",
