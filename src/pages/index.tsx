@@ -8,7 +8,12 @@ import { useUID } from 'react-uid';
 import Logo from '../assets/logo.svg';
 import Octicon from '../assets/octicon.svg';
 import { Layout } from '../components/Layout';
-import useWindowSize from '../hooks/useWindowSize';
+import { Status, STATUSES } from '../components/map/constants';
+import {
+  ProvinceTooltip,
+  SelectedProvince,
+} from '../components/map/ProvinceTooltip';
+import { Province } from '../components/map/types';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -18,9 +23,6 @@ const INITIAL_VIEW_STATE = {
   zoom: 3.8,
 };
 
-type Status = 'confirmed' | 'deaths' | 'recovered';
-const STATUSES: Status[] = ['confirmed', 'deaths', 'recovered'];
-
 type ApiDatum = {
   Country: string;
   Province: string;
@@ -29,12 +31,6 @@ type ApiDatum = {
   Date: string;
   Cases: number;
   Status: Status;
-};
-
-type SelectedProvince = {
-  province: Province;
-  x: number;
-  y: number;
 };
 
 type Country = {
@@ -47,89 +43,6 @@ const US: Country = {
   Country: 'US',
   Slug: 'us',
   Provinces: [],
-};
-
-const ProvinceTooltip = ({
-  selectedProvince: { province, x, y },
-}: {
-  selectedProvince: SelectedProvince;
-}): JSX.Element | null => {
-  const { width, height } = useWindowSize();
-  const translateX = useMemo(() => (!width || x < width / 2 ? 0 : '-100%'), [
-    x,
-    width,
-  ]);
-  const translateY = useMemo(() => (!height || y < height / 2 ? 0 : '-100%'), [
-    y,
-    height,
-  ]);
-
-  if (!province) {
-    return null;
-  }
-
-  return (
-    <section
-      css={css`
-        position: absolute;
-        transform: translate(${x}px, ${y}px)
-          translate(${translateX}, ${translateY});
-        background: #fffc;
-        padding: 8px 16px;
-      `}
-    >
-      <h1
-        css={css`
-          font-size: 16px;
-          margin: 0 0 4px;
-        `}
-      >
-        {province.name}
-      </h1>
-      <ul
-        css={css`
-          margin: 0;
-          padding: 0;
-          list-style: none;
-          font-size: 14px;
-        `}
-      >
-        {STATUSES.map(
-          (status): JSX.Element => (
-            <li key={status}>
-              {(province.maxDates[status] &&
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                province.data[province.maxDates[status]!][status]) ||
-                0}{' '}
-              {status}
-            </li>
-          ),
-        )}
-      </ul>
-    </section>
-  );
-};
-
-type Province = {
-  name: string;
-  coordinates: [number, number];
-  minDates: {
-    confirmed?: number;
-    deaths?: number;
-    recovered?: number;
-  };
-  maxDates: {
-    confirmed?: number;
-    deaths?: number;
-    recovered?: number;
-  };
-  data: {
-    [date: number]: {
-      confirmed?: number;
-      deaths?: number;
-      recovered?: number;
-    };
-  };
 };
 
 type Covid19Data = {
