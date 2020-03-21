@@ -11,7 +11,7 @@ export type SelectedProvince = {
   y: number;
 };
 
-export const ProvinceTooltip = ({
+export default ({
   selectedProvince: { province, x, y },
 }: {
   selectedProvince: SelectedProvince;

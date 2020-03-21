@@ -4,13 +4,14 @@ import { css } from '@emotion/core';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
+import { StringParam, useQueryParam } from 'use-query-params';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { STATUSES } from './constants';
+import { COUNTRIES, STATUSES } from './constants';
 import { linkCss, linkIconCss } from './css';
-import { ProvinceTooltip, SelectedProvince } from './ProvinceTooltip';
-import { ApiCountry, ApiDatum, Covid19Data, Province } from './types';
+import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
+import { ApiDatum, Covid19Data, Province } from './types';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -20,23 +21,17 @@ const INITIAL_VIEW_STATE = {
   zoom: 3.8,
 };
 
-const US: ApiCountry = {
-  Country: 'US',
-  Slug: 'us',
-  Provinces: [],
-};
-
 const addCovid19Data = ({
   covid19Data,
-  slug,
+  country,
   data,
 }: {
   covid19Data: Covid19Data;
-  slug: string;
+  country: string;
   data: ApiDatum[];
 }): Covid19Data => ({
   ...covid19Data,
-  [slug]: data.reduce((acc, datum) => {
+  [country]: data.reduce((acc, datum) => {
     const date = new Date(datum.Date).valueOf();
 
     // initialize nextProvince
@@ -67,7 +62,7 @@ const addCovid19Data = ({
     nextData[datum.Status] = datum.Cases;
 
     return acc;
-  }, covid19Data[slug] || {}),
+  }, covid19Data[country] || {}),
 });
 
 enum Covid19DataActionType {
@@ -76,25 +71,23 @@ enum Covid19DataActionType {
 
 type Covid19DataAction = {
   type: Covid19DataActionType.Add;
-  slug: string;
+  country: string;
   data: ApiDatum[];
 };
 
 const covid19DataReducer = (
   covid19Data: Covid19Data,
-  { type, slug, data }: Covid19DataAction,
+  { type, country, data }: Covid19DataAction,
 ): Covid19Data => {
   if (type === Covid19DataActionType.Add) {
-    return addCovid19Data({ covid19Data, slug, data });
+    return addCovid19Data({ covid19Data, country, data });
   }
   return { ...covid19Data };
 };
 
-export default (): JSX.Element => {
-  const [countries, setCountries] = useState<{ [Slug: string]: ApiCountry }>({
-    us: US,
-  });
-  const [country, setCountry] = useState<ApiCountry>(US);
+export default (): JSX.Element | null => {
+  const [countryQuery, setCountryQuery] = useQueryParam('country', StringParam);
+  const [country, setCountry] = useState<string>(countryQuery || 'us');
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
     selectedProvince,
@@ -106,30 +99,14 @@ export default (): JSX.Element => {
   const deathsLayerUid = useUID();
 
   useEffect(() => {
-    fetch('https://api.covid19api.com/countries')
-      .then(res => res.json())
-      .then((data: ApiCountry[]) => {
-        if (!data) {
-          return;
-        }
-        const dataMap = data.reduce((acc, c) => {
-          acc[c.Slug] = c;
-          return acc;
-        }, {} as { [Slug: string]: ApiCountry });
-        setCountries(dataMap);
-        setCountry(dataMap.us);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (covid19Data[country.Slug]) {
+    if (covid19Data[country]) {
       // already fetched data
       return;
     }
 
     STATUSES.forEach(status => {
       fetch(
-        `https://api.covid19api.com/dayone/country/${country.Slug}/status/${status}`,
+        `https://api.covid19api.com/dayone/country/${country}/status/${status}`,
       )
         .then(res => res.json())
         .then(data => {
@@ -138,7 +115,7 @@ export default (): JSX.Element => {
           }
           dispatchCovid19Data({
             type: Covid19DataActionType.Add,
-            slug: country.Slug,
+            country,
             data,
           });
         });
@@ -147,12 +124,12 @@ export default (): JSX.Element => {
 
   const confirmedLayer = useMemo(
     () =>
-      !covid19Data[country.Slug]
+      !covid19Data[country]
         ? null
         : new ScatterplotLayer({
             id: confirmedLayerUid,
-            data: Object.keys(covid19Data[country.Slug])
-              .map<Province>(k => covid19Data[country.Slug][k])
+            data: Object.keys(covid19Data[country])
+              .map<Province>(k => covid19Data[country][k])
               .filter(province => province.maxDates.confirmed),
             pickable: true,
             opacity: 0.8,
@@ -186,12 +163,12 @@ export default (): JSX.Element => {
 
   const deathsLayer = useMemo(
     () =>
-      !covid19Data[country.Slug]
+      !covid19Data[country]
         ? null
         : new ScatterplotLayer({
             id: deathsLayerUid,
-            data: Object.keys(covid19Data[country.Slug])
-              .map<Province>(k => covid19Data[country.Slug][k])
+            data: Object.keys(covid19Data[country])
+              .map<Province>(k => covid19Data[country][k])
               .filter(province => province.maxDates.deaths),
             pickable: true,
             opacity: 0.8,
@@ -283,17 +260,18 @@ export default (): JSX.Element => {
           Select country:{' '}
           <select
             id={countrySelectUid}
-            defaultValue={country.Slug}
+            defaultValue={country}
             css={css`
               max-width: 128px;
             `}
-            onChange={({ target: { value } }) => {
-              setCountry(countries[value]);
+            onChange={event => {
+              setCountryQuery(event.target.value);
+              setCountry(event.target.value);
             }}
           >
-            {Object.keys(countries).map(k => (
+            {(Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[]).map(k => (
               <option value={k} key={k}>
-                {countries[k].Country}
+                {COUNTRIES[k]}
               </option>
             ))}
           </select>
