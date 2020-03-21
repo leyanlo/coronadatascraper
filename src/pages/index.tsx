@@ -8,6 +8,7 @@ import { useUID } from 'react-uid';
 import Logo from '../assets/logo.svg';
 import Octicon from '../assets/octicon.svg';
 import { Layout } from '../components/Layout';
+import useWindowSize from '../hooks/useWindowSize';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -52,12 +53,27 @@ const ProvinceTooltip = ({
   selectedProvince: { province, x, y },
 }: {
   selectedProvince: SelectedProvince;
-}): JSX.Element | null =>
-  !province ? null : (
+}): JSX.Element | null => {
+  const { width, height } = useWindowSize();
+  const translateX = useMemo(() => (!width || x < width / 2 ? 0 : '-100%'), [
+    x,
+    width,
+  ]);
+  const translateY = useMemo(() => (!height || y < height / 2 ? 0 : '-100%'), [
+    y,
+    height,
+  ]);
+
+  if (!province) {
+    return null;
+  }
+
+  return (
     <section
       css={css`
         position: absolute;
-        transform: translate(${x}px, ${y}px);
+        transform: translate(${x}px, ${y}px)
+          translate(${translateX}, ${translateY});
         background: #fffc;
         padding: 8px 16px;
       `}
@@ -92,6 +108,7 @@ const ProvinceTooltip = ({
       </ul>
     </section>
   );
+};
 
 type Province = {
   name: string;
