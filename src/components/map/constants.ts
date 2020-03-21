@@ -1,2 +1,4 @@
-export type Status = 'confirmed' | 'deaths' | 'recovered';
-export const STATUSES: Status[] = ['confirmed', 'deaths', 'recovered'];
+import { ApiStatus } from './types';
+
+// eslint-disable-next-line import/prefer-default-export
+export const STATUSES: ApiStatus[] = ['confirmed', 'deaths', 'recovered'];

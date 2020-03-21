@@ -7,10 +7,10 @@ import { useUID } from 'react-uid';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { Status, STATUSES } from './constants';
+import { STATUSES } from './constants';
 import { linkCss, linkIconCss } from './css';
 import { ProvinceTooltip, SelectedProvince } from './ProvinceTooltip';
-import { Province } from './types';
+import { ApiCountry, ApiDatum, Covid19Data, Province } from './types';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -20,37 +20,11 @@ const INITIAL_VIEW_STATE = {
   zoom: 3.8,
 };
 
-type ApiDatum = {
-  Country: string;
-  Province: string;
-  Lat: number;
-  Lon: number;
-  Date: string;
-  Cases: number;
-  Status: Status;
-};
-
-type Country = {
-  Country: string;
-  Slug: string;
-  Provinces: string[];
-};
-
-const US: Country = {
+const US: ApiCountry = {
   Country: 'US',
   Slug: 'us',
   Provinces: [],
 };
-
-type Covid19Data = {
-  [Slug: string]: {
-    [Province: string]: Province;
-  };
-};
-
-enum Covid19DataActionType {
-  Add,
-}
 
 const addCovid19Data = ({
   covid19Data,
@@ -96,6 +70,10 @@ const addCovid19Data = ({
   }, covid19Data[slug] || {}),
 });
 
+enum Covid19DataActionType {
+  Add,
+}
+
 type Covid19DataAction = {
   type: Covid19DataActionType.Add;
   slug: string;
@@ -113,10 +91,10 @@ const covid19DataReducer = (
 };
 
 export default (): JSX.Element => {
-  const [countries, setCountries] = useState<{ [Slug: string]: Country }>({
+  const [countries, setCountries] = useState<{ [Slug: string]: ApiCountry }>({
     us: US,
   });
-  const [country, setCountry] = useState<Country>(US);
+  const [country, setCountry] = useState<ApiCountry>(US);
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
     selectedProvince,
@@ -130,14 +108,14 @@ export default (): JSX.Element => {
   useEffect(() => {
     fetch('https://api.covid19api.com/countries')
       .then(res => res.json())
-      .then((data: Country[]) => {
+      .then((data: ApiCountry[]) => {
         if (!data) {
           return;
         }
         const dataMap = data.reduce((acc, c) => {
           acc[c.Slug] = c;
           return acc;
-        }, {} as { [Slug: string]: Country });
+        }, {} as { [Slug: string]: ApiCountry });
         setCountries(dataMap);
         setCountry(dataMap.us);
       });

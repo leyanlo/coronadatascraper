@@ -1,3 +1,21 @@
+export type ApiCountry = {
+  Country: string;
+  Slug: string;
+  Provinces: string[];
+};
+
+export type ApiStatus = 'confirmed' | 'deaths' | 'recovered';
+
+export type ApiDatum = {
+  Country: string;
+  Province: string;
+  Lat: number;
+  Lon: number;
+  Date: string;
+  Cases: number;
+  Status: ApiStatus;
+};
+
 export type Province = {
   name: string;
   coordinates: [number, number];
@@ -17,5 +35,11 @@ export type Province = {
       deaths?: number;
       recovered?: number;
     };
+  };
+};
+
+export type Covid19Data = {
+  [Slug: string]: {
+    [Province: string]: Province;
   };
 };
