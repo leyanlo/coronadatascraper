@@ -267,7 +267,7 @@ export default function IndexPage(): JSX.Element {
             opacity: 0.8,
             filled: true,
             radiusScale: 2000,
-            radiusMinPixels: 2,
+            radiusMinPixels: 4,
             radiusMaxPixels: 100,
             getPosition: (d: Province) => d.coordinates,
             getRadius: (d: Province) =>
