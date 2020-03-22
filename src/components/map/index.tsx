@@ -265,7 +265,7 @@ export default (): JSX.Element | null => {
               target="_blank"
               rel="noopener noreferrer"
               css={linkCss}
-              title="data"
+              title="Data"
             >
               <img src={Logo} alt="covid19api logo" css={linkIconCss} />
             </a>
@@ -274,7 +274,7 @@ export default (): JSX.Element | null => {
               target="_blank"
               rel="noopener noreferrer"
               css={linkCss}
-              title="code"
+              title="Code"
             >
               <img src={Octicon} alt="GitHub logo" css={linkIconCss} />
             </a>
