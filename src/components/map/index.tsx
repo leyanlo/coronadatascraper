@@ -4,12 +4,6 @@ import { css } from '@emotion/core';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
-import {
-  NumberParam,
-  StringParam,
-  useQueryParam,
-  useQueryParams,
-} from 'use-query-params';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
@@ -93,14 +87,7 @@ const covid19DataReducer = (
 };
 
 export default (): JSX.Element | null => {
-  const [countryQuery, setCountryQuery] = useQueryParam('country', StringParam);
-  const [viewStateQuery, setViewStateQuery] = useQueryParams({
-    longitude: NumberParam,
-    latitude: NumberParam,
-    zoom: NumberParam,
-  });
-
-  const [country, setCountry] = useState<string>(countryQuery || 'us');
+  const [country, setCountry] = useState<string>('us');
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
     selectedProvince,
@@ -227,30 +214,9 @@ export default (): JSX.Element | null => {
   return (
     <>
       <DeckGL
-        initialViewState={{
-          ...INITIAL_VIEW_STATE,
-          ...(Object.keys(
-            viewStateQuery,
-          ) as (keyof typeof viewStateQuery)[]).reduce((acc, field) => {
-            if (viewStateQuery[field] !== undefined) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-              // @ts-ignore
-              acc[field] = viewStateQuery[field];
-            }
-            return acc;
-          }, {}),
-        }}
+        initialViewState={INITIAL_VIEW_STATE}
         controller
         layers={[confirmedLayer, deathsLayer]}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
-        onViewStateChange={({ viewState: { longitude, latitude, zoom } }) => {
-          setViewStateQuery({
-            longitude,
-            latitude,
-            zoom,
-          });
-        }}
       >
         <StaticMap
           mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
@@ -310,7 +276,6 @@ export default (): JSX.Element | null => {
               max-width: 128px;
             `}
             onChange={event => {
-              setCountryQuery(event.target.value);
               setCountry(event.target.value);
             }}
           >

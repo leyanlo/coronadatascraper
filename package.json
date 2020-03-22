@@ -39,8 +39,7 @@
     "react-map-gl": "^5.2.3",
     "react-uid": "^2.2.0",
     "sanitize.css": "^11.0.0",
-    "typescript": "^3.8.3",
-    "use-query-params": "^0.6.0"
+    "typescript": "^3.8.3"
   },
   "devDependencies": {
     "@testing-library/react": "^10.0.1",
