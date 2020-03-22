@@ -283,6 +283,7 @@ const Map = (): JSX.Element | null => {
         />
       </DeckGL>
       {(isHovered || isClicked || isDragging) && (
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         <ProvinceTooltip selectedProvince={selectedProvince!} />
       )}
       <section
