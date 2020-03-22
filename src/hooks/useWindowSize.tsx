@@ -6,7 +6,7 @@ type WindowSize = {
   height: number | null;
 };
 
-export default (): WindowSize => {
+const useWindowSize = (): WindowSize => {
   const hasWindow = typeof window === 'object';
 
   const getSize = useCallback(
@@ -40,3 +40,4 @@ export default (): WindowSize => {
 
   return windowSize;
 };
+export default useWindowSize;

@@ -5,37 +5,34 @@ import useWindowSize from '../../hooks/useWindowSize';
 import { STATUSES } from './constants';
 import { Province } from './types';
 
+// avoid cursor touching tooltip
+const OFFSET = 4;
+
 export type SelectedProvince = {
   province: Province;
   x: number;
   y: number;
 };
 
-export default ({
+const ProvinceTooltip = ({
   selectedProvince: { province, x, y },
 }: {
   selectedProvince: SelectedProvince;
 }): JSX.Element | null => {
   const { width, height } = useWindowSize();
-  const translateX = useMemo(() => (!width || x < width / 2 ? 0 : '-100%'), [
-    x,
-    width,
-  ]);
-  const translateY = useMemo(() => (!height || y < height / 2 ? 0 : '-100%'), [
-    y,
-    height,
-  ]);
 
-  if (!province) {
-    return null;
-  }
+  const isRight = useMemo(() => !width || x < width / 2, [x, width]);
+  const isBottom = useMemo(() => !height || y < height / 2, [y, height]);
 
   return (
     <section
       css={css`
         position: absolute;
-        transform: translate(${x}px, ${y}px)
-          translate(${translateX}, ${translateY});
+        transform: translate(
+            ${isRight ? x + OFFSET : x - OFFSET}px,
+            ${isBottom ? y + OFFSET : y - OFFSET}px
+          )
+          translate(${isRight ? 0 : '-100%'}, ${isBottom ? 0 : '-100%'});
         background: #fffc;
         padding: 8px 16px;
       `}
@@ -71,3 +68,4 @@ export default ({
     </section>
   );
 };
+export default ProvinceTooltip;

@@ -2,13 +2,7 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 import { css } from '@emotion/core';
 import throttle from 'just-throttle';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
@@ -93,36 +87,20 @@ const covid19DataReducer = (
   return { ...covid19Data };
 };
 
-export default (): JSX.Element | null => {
+const Map = (): JSX.Element | null => {
   const [country, setCountry] = useState<string>('us');
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
     selectedProvince,
     setSelectedProvince,
   ] = useState<SelectedProvince | null>(null);
+  const [isHovered, setHovered] = useState<boolean>(false);
+  const [isClicked, setClicked] = useState<boolean>(false);
+  const [isDragging, setDragging] = useState<boolean>(false);
 
   const countrySelectUid = useUID();
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
-
-  const handleHover = useCallback(
-    ({
-      object: province,
-      x,
-      y,
-    }: {
-      object: Province;
-      x: number;
-      y: number;
-    }) => {
-      setSelectedProvince({
-        province,
-        x,
-        y,
-      });
-    },
-    [],
-  );
 
   useEffect(() => {
     if (covid19Data[country]) {
@@ -175,10 +153,68 @@ export default (): JSX.Element | null => {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
             getLineColor: [0, 124, 254],
-            onHover: handleHover,
-            onDrag: throttle(handleHover, 100, true),
+            onHover: ({
+              object: province,
+              x,
+              y,
+            }: {
+              object: Province;
+              x: number;
+              y: number;
+            }) => {
+              if (isClicked || !province) {
+                setHovered(false);
+                return;
+              }
+
+              setSelectedProvince({
+                province,
+                x,
+                y,
+              });
+              setHovered(true);
+            },
+            onDrag: throttle(
+              ({
+                object: province,
+                x,
+                y,
+              }: {
+                object: Province;
+                x: number;
+                y: number;
+              }) => {
+                if (!province) {
+                  return;
+                }
+                setSelectedProvince({
+                  province,
+                  x,
+                  y,
+                });
+              },
+              100,
+              true,
+            ),
+            onClick: ({
+              object: province,
+              x,
+              y,
+            }: {
+              object: Province;
+              x: number;
+              y: number;
+            }) => {
+              setSelectedProvince({
+                province,
+                x,
+                y,
+              });
+              setClicked(true);
+              return true;
+            },
           }),
-    [covid19Data, country, confirmedLayerUid, handleHover],
+    [covid19Data, country, confirmedLayerUid, isClicked],
   );
 
   const deathsLayer = useMemo(
@@ -230,16 +266,25 @@ export default (): JSX.Element | null => {
         initialViewState={INITIAL_VIEW_STATE}
         controller
         layers={[confirmedLayer, deathsLayer]}
+        onClick={() => {
+          setClicked(false);
+        }}
+        onDragStart={() => {
+          setDragging(true);
+        }}
+        onDragEnd={() => {
+          setDragging(false);
+        }}
       >
         <StaticMap
           mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
           width="100%"
           height="100%"
         />
-        {selectedProvince && (
-          <ProvinceTooltip selectedProvince={selectedProvince} />
-        )}
       </DeckGL>
+      {(isHovered || isClicked || isDragging) && (
+        <ProvinceTooltip selectedProvince={selectedProvince!} />
+      )}
       <section
         css={css`
           position: absolute;
@@ -303,3 +348,4 @@ export default (): JSX.Element | null => {
     </>
   );
 };
+export default Map;
