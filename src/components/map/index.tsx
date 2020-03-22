@@ -1,7 +1,14 @@
 import { ScatterplotLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 import { css } from '@emotion/core';
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import throttle from 'just-throttle';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
@@ -98,6 +105,25 @@ export default (): JSX.Element | null => {
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
 
+  const handleHover = useCallback(
+    ({
+      object: province,
+      x,
+      y,
+    }: {
+      object: Province;
+      x: number;
+      y: number;
+    }) => {
+      setSelectedProvince({
+        province,
+        x,
+        y,
+      });
+    },
+    [],
+  );
+
   useEffect(() => {
     if (covid19Data[country]) {
       // already fetched data
@@ -149,23 +175,10 @@ export default (): JSX.Element | null => {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
             getLineColor: [0, 124, 254],
-            onHover: ({
-              object: province,
-              x,
-              y,
-            }: {
-              object: Province;
-              x: number;
-              y: number;
-            }) => {
-              setSelectedProvince({
-                province,
-                x,
-                y,
-              });
-            },
+            onHover: handleHover,
+            onDrag: throttle(handleHover, 100, true),
           }),
-    [covid19Data, country, confirmedLayerUid],
+    [covid19Data, country, confirmedLayerUid, handleHover],
   );
 
   const deathsLayer = useMemo(

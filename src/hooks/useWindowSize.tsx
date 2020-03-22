@@ -1,4 +1,4 @@
-import debounce from 'just-debounce-it';
+import throttle from 'just-throttle';
 import { useCallback, useEffect, useState } from 'react';
 
 type WindowSize = {
@@ -24,7 +24,7 @@ export default (): WindowSize => {
       return () => {};
     }
 
-    const handleResize = debounce(
+    const handleResize = throttle(
       (): void => {
         setWindowSize(getSize());
       },
