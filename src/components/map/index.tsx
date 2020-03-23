@@ -1,6 +1,7 @@
-import { ScatterplotLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 import { css } from '@emotion/core';
+import { Feature } from 'geojson';
 import throttle from 'just-throttle';
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
@@ -8,7 +9,8 @@ import { useUID } from 'react-uid';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { COUNTRIES, NAME_TO_COUNTRY, STATUSES } from './constants';
+import { API_NAME_TO_API_ID, COUNTRIES, STATUSES } from './constants';
+import countriesGeoJson from './countries.geo.json';
 import { linkCss, linkIconCss } from './css';
 import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
 import { ApiDatum, ApiSummary, Covid19Data, Province, Summary } from './types';
@@ -102,6 +104,7 @@ const Map = (): JSX.Element | null => {
   });
 
   const countrySelectUid = useUID();
+  const countriesLayerUid = useUID();
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
 
@@ -114,7 +117,7 @@ const Map = (): JSX.Element | null => {
         }
         setSummary({
           Countries: data.Countries.reduce((acc, c) => {
-            acc[NAME_TO_COUNTRY[c.Country]] = c;
+            acc[API_NAME_TO_API_ID[c.Country]] = c;
             return acc;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           }, {} as any),
@@ -146,6 +149,37 @@ const Map = (): JSX.Element | null => {
         });
     });
   }, [covid19Data, country]);
+
+  const countriesLayer = useMemo(
+    () =>
+      summary.Date &&
+      new GeoJsonLayer({
+        id: countriesLayerUid,
+        data: countriesGeoJson,
+        pickable: true,
+        stroked: true,
+        lineWidthUnits: 'pixels',
+        getFillColor: (d: Feature<null, { name: string }>) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const { apiId } = COUNTRIES[d.id!];
+          const countrySummary = summary.Countries[apiId];
+          const alpha =
+            !apiId ||
+            apiId === country ||
+            !countrySummary ||
+            !countrySummary.TotalConfirmed
+              ? 0
+              : ~~(Math.log10(countrySummary.TotalConfirmed) * 20);
+          return [0, 124, 254, alpha];
+        },
+        updateTriggers: {
+          getFillColor: [country, summary],
+        },
+      }),
+    [countriesLayerUid, country, summary],
+  );
 
   // noinspection JSUnusedGlobalSymbols
   const confirmedLayer = useMemo(
@@ -268,7 +302,7 @@ const Map = (): JSX.Element | null => {
             setHovered(false);
           }
         }, 20)}
-        layers={[confirmedLayer, deathsLayer]}
+        layers={[countriesLayer, confirmedLayer, deathsLayer]}
         onClick={() => {
           setClicked(false);
         }}
@@ -354,11 +388,15 @@ const Map = (): JSX.Element | null => {
               setCountry(event.target.value);
             }}
           >
-            {(Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[]).map(k => (
-              <option value={k} key={k}>
-                {COUNTRIES[k]}
-              </option>
-            ))}
+            {(Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[])
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .filter(k => (COUNTRIES[k] as any).apiId)
+              .map(k => (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                <option key={k} value={(COUNTRIES[k] as any).apiId}>
+                  {COUNTRIES[k].name}
+                </option>
+              ))}
           </select>
         </label>
       </section>
