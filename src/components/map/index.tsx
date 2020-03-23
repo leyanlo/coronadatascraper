@@ -134,7 +134,7 @@ const Map = (): JSX.Element | null => {
 
     STATUSES.forEach(status => {
       fetch(
-        `https://api.covid19api.com/dayone/country/${country}/status/${status}/live`,
+        `https://api.covid19api.com/dayone/country/${country}/status/${status}`,
       )
         .then(res => res.json())
         .then((data: ApiDatum[] | null) => {
