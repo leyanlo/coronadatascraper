@@ -175,4 +175,5 @@ export const NAME_TO_COUNTRY = (Object.keys(
 ) as (keyof typeof COUNTRIES)[]).reduce((acc, key) => {
   acc[COUNTRIES[key]] = key;
   return acc;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }, {} as any);

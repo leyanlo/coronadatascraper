@@ -262,6 +262,12 @@ const Map = (): JSX.Element | null => {
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller
+        onViewStateChange={throttle(({ interactionState: { isZooming } }) => {
+          if (isZooming) {
+            setClicked(false);
+            setHovered(false);
+          }
+        }, 20)}
         layers={[confirmedLayer, deathsLayer]}
         onClick={() => {
           setClicked(false);
