@@ -391,12 +391,17 @@ const Map = (): JSX.Element | null => {
             {(Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[])
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .filter(k => (COUNTRIES[k] as any).apiId)
-              .map(k => (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                <option key={k} value={(COUNTRIES[k] as any).apiId}>
-                  {COUNTRIES[k].name}
-                </option>
-              ))}
+              .map(k => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+                // @ts-ignore
+                const name = COUNTRIES[k].apiName || COUNTRIES[k].name;
+                return (
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  <option key={k} value={(COUNTRIES[k] as any).apiId}>
+                    {name}
+                  </option>
+                );
+              })}
           </select>
         </label>
       </section>
