@@ -169,3 +169,10 @@ export const COUNTRIES = {
   vietnam: 'Vietnam',
   zambia: 'Zambia',
 };
+
+export const NAME_TO_COUNTRY = (Object.keys(
+  COUNTRIES,
+) as (keyof typeof COUNTRIES)[]).reduce((acc, key) => {
+  acc[COUNTRIES[key]] = key;
+  return acc;
+}, {} as any);

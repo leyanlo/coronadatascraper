@@ -8,10 +8,10 @@ import { useUID } from 'react-uid';
 
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { COUNTRIES, STATUSES } from './constants';
+import { COUNTRIES, NAME_TO_COUNTRY, STATUSES } from './constants';
 import { linkCss, linkIconCss } from './css';
 import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
-import { ApiDatum, Covid19Data, Province } from './types';
+import { ApiDatum, ApiSummary, Covid19Data, Province, Summary } from './types';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -96,10 +96,32 @@ const Map = (): JSX.Element | null => {
   ] = useState<SelectedProvince | null>(null);
   const [isHovered, setHovered] = useState<boolean>(false);
   const [isClicked, setClicked] = useState<boolean>(false);
+  const [summary, setSummary] = useState<Summary>({
+    Countries: {},
+    Date: null,
+  });
 
   const countrySelectUid = useUID();
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
+
+  useEffect(() => {
+    fetch('https://api.covid19api.com/summary')
+      .then(res => res.json())
+      .then((data: ApiSummary | null) => {
+        if (!data) {
+          return;
+        }
+        setSummary({
+          Countries: data.Countries.reduce((acc, c) => {
+            acc[NAME_TO_COUNTRY[c.Country]] = c;
+            return acc;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          }, {} as any),
+          Date: data.Date,
+        });
+      });
+  }, []);
 
   useEffect(() => {
     if (covid19Data[country]) {
@@ -112,7 +134,7 @@ const Map = (): JSX.Element | null => {
         `https://api.covid19api.com/dayone/country/${country}/status/${status}`,
       )
         .then(res => res.json())
-        .then(data => {
+        .then((data: ApiDatum[] | null) => {
           if (!data) {
             return;
           }
@@ -128,112 +150,110 @@ const Map = (): JSX.Element | null => {
   // noinspection JSUnusedGlobalSymbols
   const confirmedLayer = useMemo(
     () =>
-      !covid19Data[country]
-        ? null
-        : new ScatterplotLayer({
-            id: confirmedLayerUid,
-            data: Object.keys(covid19Data[country])
-              .map<Province>(k => covid19Data[country][k])
-              .filter(province => province.maxDates.confirmed),
-            pickable: true,
-            opacity: 0.8,
-            stroked: true,
-            filled: false,
-            lineWidthUnits: 'pixels',
-            lineWidthMinPixels: 8,
-            lineWidthMaxPixels: LINE_WIDTH_MAX_PIXELS,
-            getPosition: (d: Province) => d.coordinates,
-            getRadius: 0,
-            getLineWidth: (d: Province) =>
-              (!d.maxDates.deaths
-                ? 0
-                : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  Math.sqrt(d.data[d.maxDates.deaths!].deaths!)) +
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
-            getLineColor: [0, 124, 254],
-            onHover: ({
-              object: province,
-              x,
-              y,
-            }: {
-              object: Province;
-              x: number;
-              y: number;
-            }) => {
-              if (isClicked || !province) {
-                setHovered(false);
-                return;
-              }
+      covid19Data[country] &&
+      new ScatterplotLayer({
+        id: confirmedLayerUid,
+        data: Object.keys(covid19Data[country])
+          .map<Province>(k => covid19Data[country][k])
+          .filter(province => province.maxDates.confirmed),
+        pickable: true,
+        opacity: 0.8,
+        stroked: true,
+        filled: false,
+        lineWidthUnits: 'pixels',
+        lineWidthMinPixels: 8,
+        lineWidthMaxPixels: LINE_WIDTH_MAX_PIXELS,
+        getPosition: (d: Province) => d.coordinates,
+        getRadius: 0,
+        getLineWidth: (d: Province) =>
+          (!d.maxDates.deaths
+            ? 0
+            : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              Math.sqrt(d.data[d.maxDates.deaths!].deaths!)) +
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
+        getLineColor: [0, 124, 254],
+        onHover: ({
+          object: province,
+          x,
+          y,
+        }: {
+          object: Province;
+          x: number;
+          y: number;
+        }) => {
+          if (isClicked || !province) {
+            setHovered(false);
+            return;
+          }
 
-              setSelectedProvince({
-                province,
-                x,
-                y,
-              });
-              setHovered(true);
-            },
-            onClick: ({
-              object: province,
-              x,
-              y,
-            }: {
-              object: Province;
-              x: number;
-              y: number;
-            }) => {
-              setSelectedProvince({
-                province,
-                x,
-                y,
-              });
-              setClicked(true);
-              return true;
-            },
-          }),
+          setSelectedProvince({
+            province,
+            x,
+            y,
+          });
+          setHovered(true);
+        },
+        onClick: ({
+          object: province,
+          x,
+          y,
+        }: {
+          object: Province;
+          x: number;
+          y: number;
+        }) => {
+          setSelectedProvince({
+            province,
+            x,
+            y,
+          });
+          setClicked(true);
+          return true;
+        },
+      }),
     [covid19Data, country, confirmedLayerUid, isClicked],
   );
 
   const deathsLayer = useMemo(
     () =>
-      !covid19Data[country]
-        ? null
-        : new ScatterplotLayer({
-            id: deathsLayerUid,
-            data: Object.keys(covid19Data[country])
-              .map<Province>(k => covid19Data[country][k])
-              .filter(province => province.maxDates.deaths),
-            opacity: 0.8,
-            stroked: true,
-            filled: false,
-            lineWidthUnits: 'pixels',
-            lineWidthMinPixels: 4,
-            getPosition: (d: Province) => d.coordinates,
-            getRadius: 0,
-            getLineWidth: (d: Province) => {
-              const deathsLineWidth = Math.sqrt(
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                d.data[d.maxDates.deaths!].deaths!,
-              );
+      covid19Data[country] &&
+      new ScatterplotLayer({
+        id: deathsLayerUid,
+        data: Object.keys(covid19Data[country])
+          .map<Province>(k => covid19Data[country][k])
+          .filter(province => province.maxDates.deaths),
+        opacity: 0.8,
+        stroked: true,
+        filled: false,
+        lineWidthUnits: 'pixels',
+        lineWidthMinPixels: 4,
+        getPosition: (d: Province) => d.coordinates,
+        getRadius: 0,
+        getLineWidth: (d: Province) => {
+          const deathsLineWidth = Math.sqrt(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            d.data[d.maxDates.deaths!].deaths!,
+          );
 
-              const confirmedLineWidth =
-                deathsLineWidth +
-                (!d.maxDates.confirmed
-                  ? 0
-                  : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!));
+          const confirmedLineWidth =
+            deathsLineWidth +
+            (!d.maxDates.confirmed
+              ? 0
+              : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!));
 
-              const clampedRatio =
-                LINE_WIDTH_MAX_PIXELS /
-                Math.max(LINE_WIDTH_MAX_PIXELS, confirmedLineWidth);
+          const clampedRatio =
+            LINE_WIDTH_MAX_PIXELS /
+            Math.max(LINE_WIDTH_MAX_PIXELS, confirmedLineWidth);
 
-              return (
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                clampedRatio * Math.sqrt(d.data[d.maxDates.deaths!].deaths!)
-              );
-            },
-            getLineColor: [255, 79, 122],
-          }),
+          return (
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            clampedRatio * Math.sqrt(d.data[d.maxDates.deaths!].deaths!)
+          );
+        },
+        getLineColor: [255, 79, 122],
+      }),
     [covid19Data, country, deathsLayerUid],
   );
 
@@ -287,7 +307,7 @@ const Map = (): JSX.Element | null => {
         <h1
           css={css`
             font-size: 20px;
-            margin-top: 0;
+            margin: 0 0 12px;
           `}
         >
           COVID-19 Map

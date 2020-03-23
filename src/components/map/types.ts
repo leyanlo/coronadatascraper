@@ -10,6 +10,28 @@ export type ApiDatum = {
   Status: ApiStatus;
 };
 
+export type ApiSummaryCountry = {
+  Country: string;
+  NewConfirmed: number;
+  TotalConfirmed: number;
+  NewDeaths: number;
+  TotalDeaths: number;
+  NewRecovered: number;
+  TotalRecovered: number;
+};
+
+export type ApiSummary = {
+  Countries: ApiSummaryCountry[];
+  Date: string;
+};
+
+export type Summary = {
+  Countries: {
+    [country: string]: ApiSummaryCountry;
+  };
+  Date: string | null;
+};
+
 export type Province = {
   name: string;
   coordinates: [number, number];
