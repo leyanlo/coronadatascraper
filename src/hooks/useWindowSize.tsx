@@ -24,13 +24,9 @@ const useWindowSize = (): WindowSize => {
       return () => {};
     }
 
-    const handleResize = throttle(
-      (): void => {
-        setWindowSize(getSize());
-      },
-      100,
-      true,
-    );
+    const handleResize = throttle((): void => {
+      setWindowSize(getSize());
+    }, 20);
 
     window.addEventListener('resize', handleResize);
     return () => {

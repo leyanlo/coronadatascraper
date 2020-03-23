@@ -96,7 +96,6 @@ const Map = (): JSX.Element | null => {
   ] = useState<SelectedProvince | null>(null);
   const [isHovered, setHovered] = useState<boolean>(false);
   const [isClicked, setClicked] = useState<boolean>(false);
-  const [isDragging, setDragging] = useState<boolean>(false);
 
   const countrySelectUid = useUID();
   const confirmedLayerUid = useUID();
@@ -174,28 +173,6 @@ const Map = (): JSX.Element | null => {
               });
               setHovered(true);
             },
-            onDrag: throttle(
-              ({
-                object: province,
-                x,
-                y,
-              }: {
-                object: Province;
-                x: number;
-                y: number;
-              }) => {
-                if (!province) {
-                  return;
-                }
-                setSelectedProvince({
-                  province,
-                  x,
-                  y,
-                });
-              },
-              100,
-              true,
-            ),
             onClick: ({
               object: province,
               x,
@@ -269,12 +246,25 @@ const Map = (): JSX.Element | null => {
         onClick={() => {
           setClicked(false);
         }}
-        onDragStart={() => {
-          setDragging(true);
-        }}
-        onDragEnd={() => {
-          setDragging(false);
-        }}
+        onDrag={throttle((
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          info: any,
+          event: {
+            deltaX: number;
+            deltaY: number;
+          },
+        ) => {
+          if (!selectedProvince) {
+            return;
+          }
+          setSelectedProvince({
+            province: selectedProvince.province,
+            x: selectedProvince.x,
+            y: selectedProvince.y,
+            deltaX: event.deltaX,
+            deltaY: event.deltaY,
+          });
+        }, 20)}
       >
         <StaticMap
           mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
@@ -282,7 +272,7 @@ const Map = (): JSX.Element | null => {
           height="100%"
         />
       </DeckGL>
-      {(isHovered || isClicked || isDragging) && (
+      {(isHovered || isClicked) && (
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         <ProvinceTooltip selectedProvince={selectedProvince!} />
       )}

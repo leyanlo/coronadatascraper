@@ -12,25 +12,33 @@ export type SelectedProvince = {
   province: Province;
   x: number;
   y: number;
+  deltaX?: number;
+  deltaY?: number;
 };
 
 const ProvinceTooltip = ({
-  selectedProvince: { province, x, y },
+  selectedProvince: { province, x, y, deltaX = 0, deltaY = 0 },
 }: {
   selectedProvince: SelectedProvince;
 }): JSX.Element | null => {
   const { width, height } = useWindowSize();
 
-  const isRight = useMemo(() => !width || x < width / 2, [x, width]);
-  const isBottom = useMemo(() => !height || y < height / 2, [y, height]);
+  const nextX = x + deltaX;
+  const nextY = y + deltaY;
+
+  const isRight = useMemo(() => !width || nextX < width / 2, [nextX, width]);
+  const isBottom = useMemo(() => !height || nextY < height / 2, [
+    nextY,
+    height,
+  ]);
 
   return (
     <section
       css={css`
         position: absolute;
         transform: translate(
-            ${isRight ? x + OFFSET : x - OFFSET}px,
-            ${isBottom ? y + OFFSET : y - OFFSET}px
+            ${isRight ? nextX + OFFSET : nextX - OFFSET}px,
+            ${isBottom ? nextY + OFFSET : nextY - OFFSET}px
           )
           translate(${isRight ? 0 : '-100%'}, ${isBottom ? 0 : '-100%'});
         background: #fffc;
