@@ -1,11 +1,13 @@
 import { css } from '@emotion/core';
 
 export const linkCss = css`
-  margin-left: 8px;
   width: 20px;
   height: 20px;
   display: inline-block;
   vertical-align: text-top;
+  :not(:last-child) {
+    margin-right: 8px;
+  }
 `;
 
 export const linkIconCss = css`

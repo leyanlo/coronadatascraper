@@ -427,6 +427,7 @@ const Map = (): JSX.Element | null => {
           <div
             css={css`
               float: right;
+              margin-left: 16px;
             `}
           >
             <a
