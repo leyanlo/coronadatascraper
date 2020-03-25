@@ -109,7 +109,6 @@ const Map = (): JSX.Element | null => {
     Date: null,
   });
 
-  const countrySelectUid = useUID();
   const countriesLayerUid = useUID();
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
@@ -146,8 +145,8 @@ const Map = (): JSX.Element | null => {
         `https://api.covid19api.com/dayone/country/${country}/status/${status}/live`,
       )
         .then(res => res.json())
-        .then((data: ApiDatum[] | null) => {
-          if (!data) {
+        .then((data: ApiDatum[] | null | {}) => {
+          if (!Array.isArray(data)) {
             return;
           }
           dispatchCovid19Data({
@@ -199,22 +198,38 @@ const Map = (): JSX.Element | null => {
             setCountryHovered(false);
             return;
           }
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const { apiId, apiName, name } = COUNTRIES[d.id!];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,@typescript-eslint/no-explicit-any
+          const { apiId, apiName, name } = (COUNTRIES as any)[d.id!];
           if (apiId === country) {
+            setCountryHovered(false);
             return;
           }
-          const summaryCountry = summary.Countries[apiId] || {
-            Country: apiName || name,
-          };
+          const summaryCountry = apiId
+            ? summary.Countries[apiId]
+            : {
+                Country: apiName || name,
+              };
           setSelectedCountry({
             summaryCountry,
             x,
             y,
           });
           setCountryHovered(true);
+        },
+        onClick: ({
+          object: d,
+        }: {
+          object: Feature<null, { name: string }>;
+          x: number;
+          y: number;
+        }) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,@typescript-eslint/no-explicit-any
+          const { apiId } = (COUNTRIES as any)[d.id!];
+          if (apiId) {
+            setCountryHovered(false);
+            setCountry(apiId);
+          }
+          return true;
         },
         updateTriggers: {
           getFillColor: [
@@ -405,7 +420,7 @@ const Map = (): JSX.Element | null => {
         <h1
           css={css`
             font-size: 20px;
-            margin: 0 0 12px;
+            margin: 0;
           `}
         >
           COVID-19 Map
@@ -434,34 +449,6 @@ const Map = (): JSX.Element | null => {
             </a>
           </div>
         </h1>
-        <label htmlFor={countrySelectUid}>
-          Select country:{' '}
-          <select
-            id={countrySelectUid}
-            defaultValue={country}
-            css={css`
-              max-width: 128px;
-            `}
-            onChange={event => {
-              setCountry(event.target.value);
-            }}
-          >
-            {(Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[])
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              .filter(k => (COUNTRIES[k] as any).apiId)
-              .map(k => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-                // @ts-ignore
-                const name = COUNTRIES[k].apiName || COUNTRIES[k].name;
-                return (
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  <option key={k} value={(COUNTRIES[k] as any).apiId}>
-                    {name}
-                  </option>
-                );
-              })}
-          </select>
-        </label>
       </section>
     </>
   );
