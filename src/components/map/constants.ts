@@ -1,7 +1,18 @@
-import { ApiStatus } from './types';
+import { ApiStatus, ApiSummaryCountry } from './types';
 
 // eslint-disable-next-line import/prefer-default-export
 export const STATUSES: ApiStatus[] = ['confirmed', 'deaths', 'recovered'];
+
+export const STATUS_TO_SUMMARY: {
+  [status in ApiStatus]: {
+    total: keyof ApiSummaryCountry;
+    new: keyof ApiSummaryCountry;
+  };
+} = {
+  confirmed: { total: 'TotalConfirmed', new: 'NewConfirmed' },
+  deaths: { total: 'TotalDeaths', new: 'NewDeaths' },
+  recovered: { total: 'TotalRecovered', new: 'NewRecovered' },
+};
 
 // Generate COUNTRIES with:
 // const countries = require('./src/components/map/countries.geo.json');
@@ -264,3 +275,6 @@ export const API_NAME_TO_API_ID = (Object.keys(
   return acc;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }, {} as any);
+
+// avoid cursor touching tooltip
+export const TOOLTIP_OFFSET = 4;

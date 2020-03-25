@@ -2,21 +2,21 @@ import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
 import useWindowSize from '../../hooks/useWindowSize';
-import { STATUSES, TOOLTIP_OFFSET } from './constants';
-import { Province } from './types';
+import { STATUS_TO_SUMMARY, STATUSES,TOOLTIP_OFFSET } from './constants';
+import { ApiSummaryCountry } from './types';
 
-export type SelectedProvince = {
-  province: Province;
+export type SelectedCountry = {
+  summaryCountry: ApiSummaryCountry;
   x: number;
   y: number;
   deltaX?: number;
   deltaY?: number;
 };
 
-const ProvinceTooltip = ({
-  selectedProvince: { province, x, y, deltaX = 0, deltaY = 0 },
+const CountryTooltip = ({
+  selectedCountry: { summaryCountry, x, y, deltaX = 0, deltaY = 0 },
 }: {
-  selectedProvince: SelectedProvince;
+  selectedCountry: SelectedCountry;
 }): JSX.Element | null => {
   const { width, height } = useWindowSize();
 
@@ -48,7 +48,7 @@ const ProvinceTooltip = ({
           margin: 0 0 4px;
         `}
       >
-        {province.name}
+        {summaryCountry.Country}
       </h1>
       <ul
         css={css`
@@ -61,11 +61,8 @@ const ProvinceTooltip = ({
         {STATUSES.map(
           (status): JSX.Element => (
             <li key={status}>
-              {(province.maxDates[status] &&
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                province.data[province.maxDates[status]!][status]) ||
-                0}{' '}
-              {status}
+              {summaryCountry[STATUS_TO_SUMMARY[status].total]} (+
+              {summaryCountry[STATUS_TO_SUMMARY[status].new]}) {status}
             </li>
           ),
         )}
@@ -73,4 +70,4 @@ const ProvinceTooltip = ({
     </section>
   );
 };
-export default ProvinceTooltip;
+export default CountryTooltip;

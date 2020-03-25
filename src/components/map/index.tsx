@@ -11,6 +11,7 @@ import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
 import { API_NAME_TO_API_ID, COUNTRIES, STATUSES } from './constants';
 import countriesGeoJson from './countries.geo.json';
+import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
 import { ApiDatum, ApiSummary, Covid19Data, Province, Summary } from './types';
@@ -96,8 +97,13 @@ const Map = (): JSX.Element | null => {
     selectedProvince,
     setSelectedProvince,
   ] = useState<SelectedProvince | null>(null);
+  const [
+    selectedCountry,
+    setSelectedCountry,
+  ] = useState<SelectedCountry | null>(null);
   const [isHovered, setHovered] = useState<boolean>(false);
   const [isClicked, setClicked] = useState<boolean>(false);
+  const [isCountryHovered, setCountryHovered] = useState<boolean>(false);
   const [summary, setSummary] = useState<Summary>({
     Countries: {},
     Date: null,
@@ -164,15 +170,43 @@ const Map = (): JSX.Element | null => {
           // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const { apiId } = COUNTRIES[d.id!];
-          const countrySummary = summary.Countries[apiId];
+          const summaryCountry = summary.Countries[apiId];
           const alpha =
             !apiId ||
             apiId === country ||
-            !countrySummary ||
-            !countrySummary.TotalConfirmed
+            !summaryCountry ||
+            !summaryCountry.TotalConfirmed
               ? 0
-              : ~~(Math.log10(countrySummary.TotalConfirmed) * 20);
+              : ~~(Math.log10(summaryCountry.TotalConfirmed) * 20);
           return [0, 124, 254, alpha];
+        },
+        onHover: ({
+          object: d,
+          x,
+          y,
+        }: {
+          object: Feature<null, { name: string }>;
+          x: number;
+          y: number;
+        }) => {
+          if (!d) {
+            setCountryHovered(false);
+            return;
+          }
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const { apiId } = COUNTRIES[d.id!];
+          const summaryCountry = summary.Countries[apiId];
+          if (!apiId || apiId === country || !summaryCountry) {
+            return;
+          }
+          setSelectedCountry({
+            summaryCountry,
+            x,
+            y,
+          });
+          setCountryHovered(true);
         },
         updateTriggers: {
           getFillColor: [country, summary],
@@ -300,6 +334,7 @@ const Map = (): JSX.Element | null => {
           if (isZooming) {
             setClicked(false);
             setHovered(false);
+            setCountryHovered(false);
           }
         }, 20)}
         layers={[countriesLayer, confirmedLayer, deathsLayer]}
@@ -314,16 +349,24 @@ const Map = (): JSX.Element | null => {
             deltaY: number;
           },
         ) => {
-          if (!selectedProvince) {
-            return;
+          if (selectedProvince) {
+            setSelectedProvince({
+              province: selectedProvince.province,
+              x: selectedProvince.x,
+              y: selectedProvince.y,
+              deltaX: event.deltaX,
+              deltaY: event.deltaY,
+            });
           }
-          setSelectedProvince({
-            province: selectedProvince.province,
-            x: selectedProvince.x,
-            y: selectedProvince.y,
-            deltaX: event.deltaX,
-            deltaY: event.deltaY,
-          });
+          if (selectedCountry) {
+            setSelectedCountry({
+              summaryCountry: selectedCountry.summaryCountry,
+              x: selectedCountry.x,
+              y: selectedCountry.y,
+              deltaX: event.deltaX,
+              deltaY: event.deltaY,
+            });
+          }
         }, 20)}
       >
         <StaticMap
@@ -332,9 +375,11 @@ const Map = (): JSX.Element | null => {
           height="100%"
         />
       </DeckGL>
-      {(isHovered || isClicked) && (
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        <ProvinceTooltip selectedProvince={selectedProvince!} />
+      {(isHovered || isClicked) && selectedProvince && (
+        <ProvinceTooltip selectedProvince={selectedProvince} />
+      )}
+      {isCountryHovered && selectedCountry && (
+        <CountryTooltip selectedCountry={selectedCountry} />
       )}
       <section
         css={css`
