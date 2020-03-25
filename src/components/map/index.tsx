@@ -172,13 +172,16 @@ const Map = (): JSX.Element | null => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
           // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const { apiId } = COUNTRIES[d.id!];
+          const { apiId, apiName, name } = COUNTRIES[d.id!];
           const summaryCountry = summary.Countries[apiId];
           const alpha =
-            !apiId ||
-            apiId === country ||
-            !summaryCountry ||
-            !summaryCountry.TotalConfirmed
+            isCountryHovered &&
+            selectedCountry?.summaryCountry.Country === (apiName || name)
+              ? 200
+              : !apiId ||
+                apiId === country ||
+                !summaryCountry ||
+                !summaryCountry.TotalConfirmed
               ? 0
               : ~~(Math.log10(summaryCountry.TotalConfirmed) * 20);
           return [0, 124, 254, alpha];
@@ -214,10 +217,16 @@ const Map = (): JSX.Element | null => {
           setCountryHovered(true);
         },
         updateTriggers: {
-          getFillColor: [country, summary],
+          getFillColor: [
+            countriesLayerUid,
+            country,
+            isCountryHovered,
+            selectedCountry,
+            summary,
+          ],
         },
       }),
-    [countriesLayerUid, country, summary],
+    [countriesLayerUid, country, isCountryHovered, selectedCountry, summary],
   );
 
   // noinspection JSUnusedGlobalSymbols
@@ -230,7 +239,6 @@ const Map = (): JSX.Element | null => {
           .map<Province>(k => covid19Data[country][k])
           .filter(province => province.maxDates.confirmed),
         pickable: true,
-        opacity: 0.8,
         stroked: true,
         filled: false,
         lineWidthUnits: 'pixels',
@@ -245,7 +253,7 @@ const Map = (): JSX.Element | null => {
               Math.sqrt(d.data[d.maxDates.deaths!].deaths!)) +
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
-        getLineColor: [0, 124, 254],
+        getLineColor: [0, 124, 254, 200],
         onHover: ({
           object: province,
           x,
@@ -296,7 +304,6 @@ const Map = (): JSX.Element | null => {
         data: Object.keys(covid19Data[country])
           .map<Province>(k => covid19Data[country][k])
           .filter(province => province.maxDates.deaths),
-        opacity: 0.8,
         stroked: true,
         filled: false,
         lineWidthUnits: 'pixels',
@@ -325,7 +332,7 @@ const Map = (): JSX.Element | null => {
             clampedRatio * Math.sqrt(d.data[d.maxDates.deaths!].deaths!)
           );
         },
-        getLineColor: [255, 79, 122],
+        getLineColor: [255, 79, 122, 200],
       }),
     [covid19Data, country, deathsLayerUid],
   );
