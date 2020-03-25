@@ -2,11 +2,15 @@ import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
 import useWindowSize from '../../hooks/useWindowSize';
-import { STATUS_TO_SUMMARY, STATUSES,TOOLTIP_OFFSET } from './constants';
+import { STATUS_TO_SUMMARY, STATUSES, TOOLTIP_OFFSET } from './constants';
 import { ApiSummaryCountry } from './types';
 
+export type MissingSummaryCountry = {
+  Country: string;
+};
+
 export type SelectedCountry = {
-  summaryCountry: ApiSummaryCountry;
+  summaryCountry: ApiSummaryCountry | MissingSummaryCountry;
   x: number;
   y: number;
   deltaX?: number;
@@ -58,14 +62,28 @@ const CountryTooltip = ({
           font-size: 14px;
         `}
       >
-        {STATUSES.map(
-          (status): JSX.Element => (
-            <li key={status}>
-              {summaryCountry[STATUS_TO_SUMMARY[status].total]} (+
-              {summaryCountry[STATUS_TO_SUMMARY[status].new]}) {status}
-            </li>
-          ),
-        )}
+        {(summaryCountry as ApiSummaryCountry)[
+          STATUS_TO_SUMMARY.confirmed.total
+        ]
+          ? STATUSES.map(
+              (status): JSX.Element => (
+                <li key={status}>
+                  {
+                    (summaryCountry as ApiSummaryCountry)[
+                      STATUS_TO_SUMMARY[status].total
+                    ]
+                  }{' '}
+                  (+
+                  {
+                    (summaryCountry as ApiSummaryCountry)[
+                      STATUS_TO_SUMMARY[status].new
+                    ]
+                  }
+                  ) {status}
+                </li>
+              ),
+            )
+          : 'No data'}
       </ul>
     </section>
   );

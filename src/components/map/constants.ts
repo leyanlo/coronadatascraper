@@ -14,7 +14,7 @@ export const STATUS_TO_SUMMARY: {
   recovered: { total: 'TotalRecovered', new: 'NewRecovered' },
 };
 
-// Generate COUNTRIES with:
+// // Generate COUNTRIES with:
 // const countries = require('./src/components/map/countries.geo.json');
 // const apiCountries = require('./static/test-api/countries.json');
 //
@@ -24,13 +24,8 @@ export const STATUS_TO_SUMMARY: {
 // }, {});
 //
 // const idToApi = {
-//   BHS: { apiId: 'bahamas,-the', apiName: 'Bahamas, The' },
-//   CZE: { apiId: 'czechia', apiName: 'Czechia' },
-//   GMB: { apiId: 'gambia,-the', apiName: 'Gambia, The' },
-//   KOR: { apiId: 'korea,-south', apiName: 'Korea, South' },
 //   MKD: { apiId: 'north-macedonia', apiName: 'North Macedonia' },
 //   SRB: { apiId: 'serbia', apiName: 'Serbia' },
-//   TWN: { apiId: 'taiwan*', apiName: 'Taiwan*' },
 //   TZA: { apiId: 'tanzania', apiName: 'Tanzania' },
 //   USA: { apiId: 'us', apiName: 'US' },
 // };
@@ -47,6 +42,16 @@ export const STATUS_TO_SUMMARY: {
 //     return acc;
 //   },
 //   {},
+// );
+//
+// const missingCountries = Object.keys(COUNTRIES).reduce(
+//   (acc, id) => {
+//     if (acc[id].apiId) {
+//       delete acc[id];
+//     }
+//     return acc;
+//   },
+//   { ...COUNTRIES },
 // );
 //
 // const missingApiNameToApiId = Object.keys(COUNTRIES).reduce(
@@ -92,10 +97,10 @@ export const COUNTRIES: {
   BFA: { name: 'Burkina Faso', apiId: 'burkina-faso' },
   BGD: { name: 'Bangladesh', apiId: 'bangladesh' },
   BGR: { name: 'Bulgaria', apiId: 'bulgaria' },
-  BHS: { name: 'The Bahamas', apiId: 'the-bahamas', apiName: 'Bahamas, The' },
+  BHS: { name: 'The Bahamas', apiId: 'the-bahamas' },
   BIH: { name: 'Bosnia and Herzegovina', apiId: 'bosnia-and-herzegovina' },
   BLR: { name: 'Belarus', apiId: 'belarus' },
-  BLZ: { name: 'Belize' },
+  BLZ: { name: 'Belize', apiId: 'belize' },
   BMU: { name: 'Bermuda' },
   BOL: { name: 'Bolivia', apiId: 'bolivia' },
   BRA: { name: 'Brazil', apiId: 'brazil' },
@@ -107,7 +112,7 @@ export const COUNTRIES: {
   CHE: { name: 'Switzerland', apiId: 'switzerland' },
   CHL: { name: 'Chile', apiId: 'chile' },
   CHN: { name: 'China', apiId: 'china' },
-  CIV: { name: 'Ivory Coast' },
+  CIV: { name: 'Ivory Coast', apiId: 'ivory-coast' },
   CMR: { name: 'Cameroon', apiId: 'cameroon' },
   COD: { name: 'Democratic Republic of the Congo' },
   COG: { name: 'Republic of the Congo', apiId: 'republic-of-the-congo' },
@@ -116,7 +121,7 @@ export const COUNTRIES: {
   CUB: { name: 'Cuba', apiId: 'cuba' },
   '-99': { name: 'Somaliland' },
   CYP: { name: 'Cyprus', apiId: 'cyprus' },
-  CZE: { name: 'Czech Republic', apiId: 'czechia', apiName: 'Czechia' },
+  CZE: { name: 'Czech Republic', apiId: 'czech-republic' },
   DEU: { name: 'Germany', apiId: 'germany' },
   DJI: { name: 'Djibouti', apiId: 'djibouti' },
   DNK: { name: 'Denmark', apiId: 'denmark' },
@@ -137,7 +142,7 @@ export const COUNTRIES: {
   GEO: { name: 'Georgia', apiId: 'georgia' },
   GHA: { name: 'Ghana', apiId: 'ghana' },
   GIN: { name: 'Guinea', apiId: 'guinea' },
-  GMB: { name: 'Gambia', apiId: 'gambia,-the', apiName: 'Gambia, The' },
+  GMB: { name: 'Gambia', apiId: 'gambia' },
   GNB: { name: 'Guinea Bissau' },
   GNQ: { name: 'Equatorial Guinea', apiId: 'equatorial-guinea' },
   GRC: { name: 'Greece', apiId: 'greece' },
@@ -164,13 +169,13 @@ export const COUNTRIES: {
   KEN: { name: 'Kenya', apiId: 'kenya' },
   KGZ: { name: 'Kyrgyzstan', apiId: 'kyrgyzstan' },
   KHM: { name: 'Cambodia', apiId: 'cambodia' },
-  KOR: { name: 'South Korea', apiId: 'korea,-south', apiName: 'Korea, South' },
+  KOR: { name: 'South Korea', apiId: 'south-korea' },
   'CS-KM': { name: 'Kosovo', apiId: 'kosovo' },
   KWT: { name: 'Kuwait', apiId: 'kuwait' },
-  LAO: { name: 'Laos' },
+  LAO: { name: 'Laos', apiId: 'laos' },
   LBN: { name: 'Lebanon', apiId: 'lebanon' },
   LBR: { name: 'Liberia', apiId: 'liberia' },
-  LBY: { name: 'Libya' },
+  LBY: { name: 'Libya', apiId: 'libya' },
   LKA: { name: 'Sri Lanka', apiId: 'sri-lanka' },
   LSO: { name: 'Lesotho' },
   LTU: { name: 'Lithuania', apiId: 'lithuania' },
@@ -243,7 +248,7 @@ export const COUNTRIES: {
   TTO: { name: 'Trinidad and Tobago', apiId: 'trinidad-and-tobago' },
   TUN: { name: 'Tunisia', apiId: 'tunisia' },
   TUR: { name: 'Turkey', apiId: 'turkey' },
-  TWN: { name: 'Taiwan', apiId: 'taiwan*', apiName: 'Taiwan*' },
+  TWN: { name: 'Taiwan', apiId: 'taiwan' },
   TZA: {
     name: 'United Republic of Tanzania',
     apiId: 'tanzania',

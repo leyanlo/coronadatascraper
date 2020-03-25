@@ -123,7 +123,10 @@ const Map = (): JSX.Element | null => {
         }
         setSummary({
           Countries: data.Countries.reduce((acc, c) => {
-            acc[API_NAME_TO_API_ID[c.Country]] = c;
+            const apiId = API_NAME_TO_API_ID[c.Country];
+            if (apiId) {
+              acc[apiId] = c;
+            }
             return acc;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           }, {} as any),
@@ -196,11 +199,13 @@ const Map = (): JSX.Element | null => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
           // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const { apiId } = COUNTRIES[d.id!];
-          const summaryCountry = summary.Countries[apiId];
-          if (!apiId || apiId === country || !summaryCountry) {
+          const { apiId, apiName, name } = COUNTRIES[d.id!];
+          if (apiId === country) {
             return;
           }
+          const summaryCountry = summary.Countries[apiId] || {
+            Country: apiName || name,
+          };
           setSelectedCountry({
             summaryCountry,
             x,
