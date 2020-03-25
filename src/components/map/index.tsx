@@ -333,6 +333,7 @@ const Map = (): JSX.Element | null => {
   return (
     <>
       <DeckGL
+        getCursor={() => (isHovered || isCountryHovered ? 'pointer' : 'grab')}
         initialViewState={INITIAL_VIEW_STATE}
         controller
         onViewStateChange={throttle(({ interactionState: { isZooming } }) => {
