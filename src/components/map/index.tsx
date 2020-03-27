@@ -423,7 +423,7 @@ const Map = (): JSX.Element | null => {
             margin: 0;
           `}
         >
-          COVID-19 Map
+          COVID19 API Map
           <div
             css={css`
               float: right;

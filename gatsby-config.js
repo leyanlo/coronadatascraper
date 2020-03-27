@@ -1,6 +1,6 @@
 const siteMetadata = {
-  name: 'COVID-19 Map',
-  description: 'COVID-19 map created using covid19api.',
+  name: 'COVID19 API Map',
+  description: 'Map created using covid19api.',
 };
 
 module.exports = {
