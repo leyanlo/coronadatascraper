@@ -1,3 +1,3 @@
-# COVID19 API Map
+# Corona Data Scraper Map
 
-Map created using [covid19api](https://covid19api.com/).
+Map created using [Corona Data Scraper](https://coronadatascraper.com/).

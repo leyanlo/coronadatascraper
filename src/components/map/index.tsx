@@ -423,7 +423,7 @@ const Map = (): JSX.Element | null => {
             margin: 0;
           `}
         >
-          COVID19 API Map
+          Corona Data Scraper Map
           <div
             css={css`
               float: right;
@@ -431,16 +431,20 @@ const Map = (): JSX.Element | null => {
             `}
           >
             <a
-              href="https://covid19api.com/"
+              href="https://coronadatascraper.com/"
               target="_blank"
               rel="noopener noreferrer"
               css={linkCss}
               title="Data"
             >
-              <img src={Logo} alt="covid19api logo" css={linkIconCss} />
+              <img
+                src={Logo}
+                alt="Corona Data Scraper logo"
+                css={linkIconCss}
+              />
             </a>
             <a
-              href="https://github.com/leyanlo/covid19api"
+              href="https://github.com/leyanlo/coronadatascraper"
               target="_blank"
               rel="noopener noreferrer"
               css={linkCss}

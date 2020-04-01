@@ -1,5 +1,5 @@
 {
-  "name": "covid19-map",
+  "name": "cds-map",
   "private": true,
   "scripts": {
     "build": "gatsby build",
