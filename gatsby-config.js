@@ -1,34 +1,7 @@
-const siteMetadata = {
-  name: 'CDS Map',
-  description: 'Map created using Corona Data Scraper.',
-};
+// We register the TypeScript evaluator in gatsby-config so we don't need to do
+// it in any other .js file. It automatically reads TypeScript config from
+// tsconfig.json.
+require('ts-node').register();
 
-module.exports = {
-  siteMetadata,
-  plugins: [
-    'gatsby-plugin-emotion',
-    {
-      resolve: 'gatsby-plugin-manifest',
-      options: {
-        ...siteMetadata,
-        display: 'minimal-ui',
-        theme_color: '#ff4f7a',
-        background_color: 'white',
-        icon: 'src/assets/logo.svg',
-        lang: 'en-US',
-        start_url: '/',
-      },
-    },
-    'gatsby-plugin-react-helmet',
-    'gatsby-plugin-typescript',
-    'gatsby-plugin-offline',
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        trackingId: 'UA-126651057-3',
-        head: true,
-        respectDNT: true,
-      },
-    },
-  ],
-};
+// Use a TypeScript version of gatsby-config.js.
+module.exports = require('./gatsby-config-exports');
