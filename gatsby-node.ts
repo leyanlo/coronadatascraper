@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { differenceInDays } from 'date-fns';
 import fs from 'fs';
 import { GatsbyNode } from 'gatsby';
 import fetch from 'node-fetch';
@@ -102,7 +101,7 @@ export const onPreInit: GatsbyNode['onPreInit'] = async () => {
       );
     }, 0);
 
-    if (differenceInDays(new Date(), maxDate) > 1) {
+    if (new Date().valueOf() - maxDate > 2 * 24 * 60 * 60 * 1000) {
       // noinspection ExceptionCaughtLocallyJS
       throw new Error('Corona Data Scraper data more than one day old.');
     }
