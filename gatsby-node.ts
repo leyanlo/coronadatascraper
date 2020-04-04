@@ -4,7 +4,7 @@ import { GatsbyNode } from 'gatsby';
 import fetch from 'node-fetch';
 
 import { DATA_FILE, FILTERED_DATA_FILE } from './constants';
-import { CdsData, CdsDatum } from './types';
+import { CdsData, CdsDatum, FilteredCdsData, FilteredCdsDatum } from './types';
 
 const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
   Object.keys(dates).reduce((acc, k) => {
@@ -14,22 +14,20 @@ const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
       deaths,
     };
     return acc;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }, {} as any);
+  }, {} as FilteredCdsDatum['dates']);
 
-const filterData = (data: CdsData): CdsData =>
+const filterData = (data: CdsData): FilteredCdsData =>
   Object.keys(data).reduce((acc, k) => {
-    const { dates, aggregate, coordinates, population } = data[k];
+    const { dates, coordinates, level, population } = data[k];
     const filteredDates = filterDates(dates);
     acc[k] = {
       dates: filteredDates,
-      aggregate,
       coordinates,
+      level,
       population,
     };
     return acc;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }, {} as any);
+  }, {} as FilteredCdsData);
 
 // eslint-disable-next-line import/prefer-default-export
 export const onPreInit: GatsbyNode['onPreInit'] = async () => {
@@ -57,7 +55,15 @@ export const onPreInit: GatsbyNode['onPreInit'] = async () => {
       'Corona Data Scraper data present and current.\nSkipping fetch.',
     );
   } catch (err) {
-    console.log(err.message, '\nFetching new Corona Data Scraper data.');
+    if (
+      err.message ===
+      `ENOENT: no such file or directory, open '${filteredDataPath}'`
+    ) {
+      console.log('Corona Data Scraper data not found.');
+    } else {
+      console.log(err.message);
+    }
+    console.log('Fetching new Corona Data Scraper data.');
     await fetch(`https://coronadatascraper.com/${DATA_FILE}`)
       .then(res => res.json())
       .then((data: CdsData) => {

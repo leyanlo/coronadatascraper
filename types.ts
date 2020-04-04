@@ -3,53 +3,82 @@ type CdsDateDatum = {
   deaths?: number;
   recovered?: number;
   active?: number;
-  tested?: number;
   growthFactor?: number | null;
+  tested?: number;
 };
 
 type Maintainer = {
   name: string;
-  email: string;
-  twitter: string;
+  email?: string;
+  twitter?: string;
   github: string;
-  country: string;
-  state: string;
-  county: string;
-  city: string;
-  flag: string;
+  country?: string;
+  state?: string;
+  county?: string;
+  city?: string;
+  flag?: string;
+  url?: string;
 };
 
 type Curator = {
   name: string;
-  url: string;
-  twitter: string;
-  github: string;
+  url?: string;
+  twitter?: string;
+  github?: string;
 };
 
+type Level = 'country' | 'state' | 'county' | 'city';
+
 type Source = {
-  url: string;
+  url?: string;
   name: string;
-  description: string;
+  description?: string;
 };
 
 export type CdsDatum = {
   dates: {
     [isoDate: string]: CdsDateDatum;
   };
-  maintainers: Maintainer[];
+  maintainers?: Maintainer[];
   url: string;
-  curators?: Curator[];
-  aggregate: 'state' | 'county';
   country: string;
-  coordinates: [number, number];
-  state?: string;
+  curators?: Curator[];
+  aggregate?: Level;
+  coordinates?: [number, number];
   rating: number;
+  name: string;
+  level: Level;
+  tz?: string[];
+  featureId?: number;
+  population?: number;
+  state?: string;
   sources?: Source[];
-  tz: string[];
-  featureId: number;
-  population: number;
+  stateId?: string;
+  hospitalized?: number;
+  countryId?: string;
+  county?: string;
+  countyId?: string;
+  city?: string;
 };
 
 export type CdsData = {
   [stateOrCounty: string]: CdsDatum;
+};
+
+type FilteredCdsDateDatum = {
+  cases?: number;
+  deaths?: number;
+};
+
+export type FilteredCdsDatum = {
+  dates: {
+    [isoDate: string]: FilteredCdsDateDatum;
+  };
+  coordinates?: [number, number];
+  level: Level;
+  population?: number;
+};
+
+export type FilteredCdsData = {
+  [stateOrCounty: string]: FilteredCdsDatum;
 };
