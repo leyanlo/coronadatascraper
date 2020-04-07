@@ -16,6 +16,7 @@ import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
 import { ApiDatum, Covid19Data, Province } from './types';
+import { getLastDateDatum } from './utils';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -159,15 +160,10 @@ const Map = (): JSX.Element | null => {
           const countryCode = d.id as keyof typeof COUNTRIES;
           const countryName = COUNTRIES[countryCode];
           const countryData = cdsData[countryName];
-          if (!countryData) {
-            return [0, 0, 0, 0];
-          }
-
-          const dateArray = Object.keys(countryData.dates);
-          const lastDate = dateArray[dateArray.length - 1];
-          const alpha = !countryData.dates[lastDate].cases
+          const lastDateDatum = getLastDateDatum(countryData);
+          const alpha = !lastDateDatum?.cases
             ? 0
-            : ~~(Math.log10(countryData.dates[lastDate].cases!) * 20);
+            : ~~(Math.log10(lastDateDatum.cases) * 20);
           return [0, 124, 254, alpha];
         },
         onHover: ({

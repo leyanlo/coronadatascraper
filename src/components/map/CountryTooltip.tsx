@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../types';
 import useWindowSize from '../../hooks/useWindowSize';
 import { TOOLTIP_OFFSET } from './constants';
+import { getLastDateDatum } from './utils';
 
 export type SelectedCountry = {
   countryName: string;
@@ -62,15 +63,10 @@ const CountryTooltip = ({
         {countryData
           ? (['cases', 'deaths'] as (keyof FilteredCdsDateDatum)[]).map(
               (status): JSX.Element => {
-                const dateArray = Object.keys(countryData.dates);
-                const lastDate = dateArray[dateArray.length - 1];
-
+                const lastDateDatum = getLastDateDatum(countryData);
                 return (
                   <li key={status}>
-                    {countryData.dates[lastDate]
-                      ? countryData.dates[lastDate][status]
-                      : 0}{' '}
-                    {status}
+                    {lastDateDatum ? lastDateDatum[status] : 0} {status}
                   </li>
                 );
               },

@@ -1,6 +1,5 @@
 import { ApiStatus, ApiSummaryCountry } from './types';
 
-// eslint-disable-next-line import/prefer-default-export
 export const STATUSES: ApiStatus[] = ['confirmed', 'deaths', 'recovered'];
 
 // avoid cursor touching tooltip

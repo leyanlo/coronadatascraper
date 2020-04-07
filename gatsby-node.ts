@@ -32,7 +32,6 @@ const filterData = (data: CdsData): FilteredCdsData =>
     return acc;
   }, {} as FilteredCdsData);
 
-// eslint-disable-next-line import/prefer-default-export
 export const onPreInit: GatsbyNode['onPreInit'] = async () => {
   const dataPath = `./static/${DATA_FILE}`;
   const filteredDataPath = `./static/${FILTERED_DATA_FILE}`;
