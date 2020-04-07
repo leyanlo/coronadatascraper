@@ -1,16 +1,13 @@
 import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
+import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../types';
 import useWindowSize from '../../hooks/useWindowSize';
-import { STATUS_TO_SUMMARY, STATUSES, TOOLTIP_OFFSET } from './constants';
-import { ApiSummaryCountry } from './types';
-
-export type MissingSummaryCountry = {
-  Country: string;
-};
+import { TOOLTIP_OFFSET } from './constants';
 
 export type SelectedCountry = {
-  summaryCountry: ApiSummaryCountry | MissingSummaryCountry;
+  countryName: string;
+  countryData: FilteredCdsDatum;
   x: number;
   y: number;
   deltaX?: number;
@@ -18,7 +15,7 @@ export type SelectedCountry = {
 };
 
 const CountryTooltip = ({
-  selectedCountry: { summaryCountry, x, y, deltaX = 0, deltaY = 0 },
+  selectedCountry: { countryName, countryData, x, y, deltaX = 0, deltaY = 0 },
 }: {
   selectedCountry: SelectedCountry;
 }): JSX.Element | null => {
@@ -52,7 +49,7 @@ const CountryTooltip = ({
           margin: 0 0 4px;
         `}
       >
-        {summaryCountry.Country}
+        {countryName}
       </h1>
       <ul
         css={css`
@@ -62,26 +59,21 @@ const CountryTooltip = ({
           font-size: 14px;
         `}
       >
-        {(summaryCountry as ApiSummaryCountry)[
-          STATUS_TO_SUMMARY.confirmed.total
-        ]
-          ? STATUSES.map(
-              (status): JSX.Element => (
-                <li key={status}>
-                  {
-                    (summaryCountry as ApiSummaryCountry)[
-                      STATUS_TO_SUMMARY[status].total
-                    ]
-                  }{' '}
-                  (+
-                  {
-                    (summaryCountry as ApiSummaryCountry)[
-                      STATUS_TO_SUMMARY[status].new
-                    ]
-                  }
-                  ) {status}
-                </li>
-              ),
+        {countryData
+          ? (['cases', 'deaths'] as (keyof FilteredCdsDateDatum)[]).map(
+              (status): JSX.Element => {
+                const dateArray = Object.keys(countryData.dates);
+                const lastDate = dateArray[dateArray.length - 1];
+
+                return (
+                  <li key={status}>
+                    {countryData.dates[lastDate]
+                      ? countryData.dates[lastDate][status]
+                      : 0}{' '}
+                    {status}
+                  </li>
+                );
+              },
             )
           : 'No data'}
       </ul>

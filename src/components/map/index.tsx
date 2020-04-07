@@ -7,14 +7,15 @@ import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
+import { FilteredCdsData } from '../../../types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { API_NAME_TO_API_ID, COUNTRIES, STATUSES } from './constants';
+import { COUNTRIES, STATUSES } from './constants';
 import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
-import { ApiDatum, ApiSummary, Covid19Data, Province, Summary } from './types';
+import { ApiDatum, Covid19Data, Province } from './types';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -104,33 +105,20 @@ const Map = (): JSX.Element | null => {
   const [isHovered, setHovered] = useState<boolean>(false);
   const [isClicked, setClicked] = useState<boolean>(false);
   const [isCountryHovered, setCountryHovered] = useState<boolean>(false);
-  const [summary, setSummary] = useState<Summary>({
-    Countries: {},
-    Date: null,
-  });
+  const [cdsData, setCdsData] = useState<FilteredCdsData | null>(null);
 
   const countriesLayerUid = useUID();
   const confirmedLayerUid = useUID();
   const deathsLayerUid = useUID();
 
   useEffect(() => {
-    fetch('https://api.covid19api.com/summary')
+    fetch('/timeseries-byLocation-filtered.json')
       .then(res => res.json())
-      .then((data: ApiSummary | null) => {
+      .then((data: FilteredCdsData) => {
         if (!data) {
           return;
         }
-        setSummary({
-          Countries: data.Countries.reduce((acc, c) => {
-            const apiId = API_NAME_TO_API_ID[c.Country];
-            if (apiId) {
-              acc[apiId] = c;
-            }
-            return acc;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          }, {} as any),
-          Date: data.Date,
-        });
+        setCdsData(data);
       });
   }, []);
 
@@ -160,7 +148,7 @@ const Map = (): JSX.Element | null => {
 
   const countriesLayer = useMemo(
     () =>
-      summary.Date &&
+      cdsData &&
       new GeoJsonLayer({
         id: countriesLayerUid,
         data: countriesGeoJson,
@@ -168,21 +156,18 @@ const Map = (): JSX.Element | null => {
         stroked: true,
         lineWidthUnits: 'pixels',
         getFillColor: (d: Feature<null, { name: string }>) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const { apiId, apiName, name } = COUNTRIES[d.id!];
-          const summaryCountry = summary.Countries[apiId];
-          const alpha =
-            isCountryHovered &&
-            selectedCountry?.summaryCountry.Country === (apiName || name)
-              ? 200
-              : !apiId ||
-                apiId === country ||
-                !summaryCountry ||
-                !summaryCountry.TotalConfirmed
-              ? 0
-              : ~~(Math.log10(summaryCountry.TotalConfirmed) * 20);
+          const countryCode = d.id as keyof typeof COUNTRIES;
+          const countryName = COUNTRIES[countryCode];
+          const countryData = cdsData[countryName];
+          if (!countryData) {
+            return [0, 0, 0, 0];
+          }
+
+          const dateArray = Object.keys(countryData.dates);
+          const lastDate = dateArray[dateArray.length - 1];
+          const alpha = !countryData.dates[lastDate].cases
+            ? 0
+            : ~~(Math.log10(countryData.dates[lastDate].cases!) * 20);
           return [0, 124, 254, alpha];
         },
         onHover: ({
@@ -198,50 +183,21 @@ const Map = (): JSX.Element | null => {
             setCountryHovered(false);
             return;
           }
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,@typescript-eslint/no-explicit-any
-          const { apiId, apiName, name } = (COUNTRIES as any)[d.id!];
-          if (apiId === country) {
-            setCountryHovered(false);
-            return;
-          }
-          const summaryCountry = apiId
-            ? summary.Countries[apiId]
-            : {
-                Country: apiName || name,
-              };
+          const countryCode = d.id as keyof typeof COUNTRIES;
+          const countryName = COUNTRIES[countryCode];
           setSelectedCountry({
-            summaryCountry,
+            countryName,
+            countryData: cdsData[countryName],
             x,
             y,
           });
           setCountryHovered(true);
         },
-        onClick: ({
-          object: d,
-        }: {
-          object: Feature<null, { name: string }>;
-          x: number;
-          y: number;
-        }) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,@typescript-eslint/no-explicit-any
-          const { apiId } = (COUNTRIES as any)[d.id!];
-          if (apiId) {
-            setCountryHovered(false);
-            setCountry(apiId);
-          }
-          return true;
-        },
         updateTriggers: {
-          getFillColor: [
-            countriesLayerUid,
-            country,
-            isCountryHovered,
-            selectedCountry,
-            summary,
-          ],
+          getFillColor: [cdsData, countriesLayerUid, country, selectedCountry],
         },
       }),
-    [countriesLayerUid, country, isCountryHovered, selectedCountry, summary],
+    [cdsData, countriesLayerUid, country, selectedCountry],
   );
 
   // noinspection JSUnusedGlobalSymbols
@@ -388,7 +344,8 @@ const Map = (): JSX.Element | null => {
           }
           if (selectedCountry) {
             setSelectedCountry({
-              summaryCountry: selectedCountry.summaryCountry,
+              countryName: selectedCountry.countryName,
+              countryData: selectedCountry.countryData,
               x: selectedCountry.x,
               y: selectedCountry.y,
               deltaX: event.deltaX,

@@ -65,7 +65,7 @@ export type CdsData = {
   [stateOrCounty: string]: CdsDatum;
 };
 
-type FilteredCdsDateDatum = {
+export type FilteredCdsDateDatum = {
   cases?: number;
   deaths?: number;
 };
