@@ -9,10 +9,13 @@ import { CdsData, CdsDatum, FilteredCdsData, FilteredCdsDatum } from './types';
 const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
   Object.keys(dates).reduce((acc, k) => {
     const { cases, deaths } = dates[k];
-    acc[k] = {
-      cases,
-      deaths,
-    };
+    // skip empty dates
+    if (cases || Object.keys(acc).length) {
+      acc[k] = {
+        cases,
+        deaths,
+      };
+    }
     return acc;
   }, {} as FilteredCdsDatum['dates']);
 
