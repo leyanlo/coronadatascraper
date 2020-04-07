@@ -66,7 +66,10 @@ const CountryTooltip = ({
                 const lastDateDatum = getLastDateDatum(countryData);
                 return (
                   <li key={status}>
-                    {lastDateDatum ? lastDateDatum[status] : 0} {status}
+                    {(lastDateDatum &&
+                      lastDateDatum[status]?.toLocaleString()) ||
+                      0}{' '}
+                    {status}
                   </li>
                 );
               },
