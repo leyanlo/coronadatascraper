@@ -3,8 +3,13 @@ import fs from 'fs';
 import { GatsbyNode } from 'gatsby';
 import fetch from 'node-fetch';
 
-import { DATA_FILE, FILTERED_DATA_FILE } from './constants';
-import { CdsData, CdsDatum, FilteredCdsData, FilteredCdsDatum } from './types';
+import { DATA_FILE, FILTERED_DATA_FILE } from './scripts/constants';
+import {
+  CdsData,
+  CdsDatum,
+  FilteredCdsData,
+  FilteredCdsDatum,
+} from './scripts/types';
 
 const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
   Object.keys(dates).reduce((acc, k) => {

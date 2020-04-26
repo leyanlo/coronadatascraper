@@ -1,7 +1,7 @@
 import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
-import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../types';
+import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../scripts/types';
 import useWindowSize from '../../hooks/useWindowSize';
 import { TOOLTIP_OFFSET } from './constants';
 import { getLastDateDatum } from './utils';

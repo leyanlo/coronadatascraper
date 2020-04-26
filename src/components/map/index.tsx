@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
-import { FilteredCdsData } from '../../../types';
+import { FilteredCdsData } from '../../../scripts/types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
 import { COUNTRIES, STATUSES } from './constants';

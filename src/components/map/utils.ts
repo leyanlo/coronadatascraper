@@ -1,4 +1,4 @@
-import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../types';
+import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../scripts/types';
 
 export const getLastDateDatum = (
   d: FilteredCdsDatum | void,
