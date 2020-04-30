@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import fs from 'fs';
 
-import { DATA_FILE, FILTERED_DATA_FILE } from './constants';
+import { DATA_PATH, FILTERED_DATA_PATH } from './constants';
 import { CdsData, CdsDatum, FilteredCdsData, FilteredCdsDatum } from './types';
 
 const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
@@ -30,22 +30,24 @@ const filterData = (data: CdsData): FilteredCdsData =>
     return acc;
   }, {} as FilteredCdsData);
 
-const dataPath = `./static/${DATA_FILE}`;
-const filteredDataPath = `./static/${FILTERED_DATA_FILE}`;
+const filterCdsData = (): void => {
+  try {
+    const data: CdsData = JSON.parse(
+      (fs.readFileSync(DATA_PATH) as unknown) as string,
+    );
 
-try {
-  const data: CdsData = JSON.parse(
-    (fs.readFileSync(dataPath) as unknown) as string,
-  );
-
-  fs.writeFileSync(filteredDataPath, JSON.stringify(filterData(data)));
-  console.log(
-    `Wrote filtered Corona Data Scraper data to ${filteredDataPath}.`,
-  );
-} catch (err) {
-  if (err.message === `ENOENT: no such file or directory, open '${dataPath}'`) {
-    console.error('Corona Data Scraper data not found.');
-  } else {
-    console.error(err.message);
+    fs.writeFileSync(FILTERED_DATA_PATH, JSON.stringify(filterData(data)));
+    console.log(
+      `Wrote filtered Corona Data Scraper data to ${FILTERED_DATA_PATH}.`,
+    );
+  } catch (err) {
+    if (
+      err.message === `ENOENT: no such file or directory, open '${DATA_PATH}'`
+    ) {
+      console.error('Corona Data Scraper data not found.');
+    } else {
+      console.error(err.message);
+    }
   }
-}
+};
+export default filterCdsData;
