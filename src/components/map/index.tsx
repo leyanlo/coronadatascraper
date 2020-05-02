@@ -164,7 +164,7 @@ const Map = (): JSX.Element | null => {
           const alpha = !lastDateDatum?.cases
             ? 0
             : ~~(Math.log10(lastDateDatum.cases) * 20);
-          return [0, 124, 254, alpha];
+          return [130, 152, 0, alpha];
         },
         onHover: ({
           object: d,
@@ -220,7 +220,7 @@ const Map = (): JSX.Element | null => {
               Math.sqrt(d.data[d.maxDates.deaths!].deaths!)) +
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
-        getLineColor: [0, 124, 254, 200],
+        getLineColor: [0, 126, 96, 200],
         onHover: ({
           object: province,
           x,
@@ -299,7 +299,7 @@ const Map = (): JSX.Element | null => {
             clampedRatio * Math.sqrt(d.data[d.maxDates.deaths!].deaths!)
           );
         },
-        getLineColor: [255, 79, 122, 200],
+        getLineColor: [33, 56, 94, 200],
       }),
     [covid19Data, country, deathsLayerUid],
   );
