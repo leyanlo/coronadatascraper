@@ -1,7 +1,7 @@
 import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
-import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../scripts/types';
+import { DatumKind, FilteredCdsDatum } from '../../../scripts/types';
 import useWindowSize from '../../hooks/useWindowSize';
 import { TOOLTIP_OFFSET } from './constants';
 import { getLastDateDatum } from './utils';
@@ -61,19 +61,21 @@ const CountryTooltip = ({
         `}
       >
         {countryData
-          ? (['cases', 'deaths'] as (keyof FilteredCdsDateDatum)[]).map(
-              (status): JSX.Element => {
-                const lastDateDatum = getLastDateDatum(countryData);
-                return (
-                  <li key={status}>
-                    {(lastDateDatum &&
-                      lastDateDatum[status]?.toLocaleString()) ||
-                      0}{' '}
-                    {status}
-                  </li>
-                );
-              },
-            )
+          ? Object.keys(DatumKind)
+              .map(k => DatumKind[k as keyof typeof DatumKind])
+              .map(
+                (kind): JSX.Element => {
+                  const lastDateDatum = getLastDateDatum(countryData);
+                  return (
+                    <li key={kind}>
+                      {(lastDateDatum &&
+                        lastDateDatum[kind]?.toLocaleString()) ||
+                        0}{' '}
+                      {kind}
+                    </li>
+                  );
+                },
+              )
           : 'No data'}
       </ul>
     </section>

@@ -27,7 +27,12 @@ type Curator = {
   github?: string;
 };
 
-type Level = 'country' | 'state' | 'county' | 'city';
+export enum Level {
+  Country = 'country',
+  State = 'state',
+  County = 'county',
+  City = 'city',
+}
 
 type Source = {
   url?: string;
@@ -65,9 +70,13 @@ export type CdsData = {
   [stateOrCounty: string]: CdsDatum;
 };
 
+export enum DatumKind {
+  Cases = 'cases',
+  Deaths = 'deaths',
+}
+
 export type FilteredCdsDateDatum = {
-  cases?: number;
-  deaths?: number;
+  [kind in DatumKind]?: number;
 };
 
 export type FilteredCdsDatum = {

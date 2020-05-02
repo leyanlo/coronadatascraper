@@ -7,14 +7,14 @@ import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
-import { FilteredCdsData } from '../../../scripts/types';
+import { FilteredCdsData, Level } from '../../../scripts/types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
 import { COUNTRIES, STATUSES } from './constants';
 import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
-import ProvinceTooltip, { SelectedProvince } from './ProvinceTooltip';
+import LocationTooltip, { Location, SelectedLocation } from './LocationTooltip';
 import { ApiDatum, Covid19Data, Province } from './types';
 import { getLastDateDatum } from './utils';
 
@@ -96,9 +96,9 @@ const Map = (): JSX.Element | null => {
   const [country, setCountry] = useState<string>('us');
   const [covid19Data, dispatchCovid19Data] = useReducer(covid19DataReducer, {});
   const [
-    selectedProvince,
-    setSelectedProvince,
-  ] = useState<SelectedProvince | null>(null);
+    selectedLocation,
+    setSelectedLocation,
+  ] = useState<SelectedLocation | null>(null);
   const [
     selectedCountry,
     setSelectedCountry,
@@ -109,7 +109,7 @@ const Map = (): JSX.Element | null => {
   const [cdsData, setCdsData] = useState<FilteredCdsData | null>(null);
 
   const countriesLayerUid = useUID();
-  const confirmedLayerUid = useUID();
+  const locationLayerUid = useUID();
   const deathsLayerUid = useUID();
 
   useEffect(() => {
@@ -196,63 +196,68 @@ const Map = (): JSX.Element | null => {
     [cdsData, countriesLayerUid, country, selectedCountry],
   );
 
-  // noinspection JSUnusedGlobalSymbols
-  const confirmedLayer = useMemo(
+  const locationLayer = useMemo(
     () =>
-      covid19Data[country] &&
+      cdsData &&
       new ScatterplotLayer({
-        id: confirmedLayerUid,
-        data: Object.keys(covid19Data[country])
-          .map<Province>(k => covid19Data[country][k])
-          .filter(province => province.maxDates.confirmed),
+        id: locationLayerUid,
+        data: Object.keys(cdsData)
+          .map<Location>(k => ({
+            ...cdsData[k],
+            name: k
+              .split(', ')
+              .slice(0, -1)
+              .join(', '),
+          }))
+          .filter(datum => datum.level !== Level.Country),
         pickable: true,
         stroked: true,
         filled: false,
         lineWidthUnits: 'pixels',
         lineWidthMinPixels: 8,
         lineWidthMaxPixels: LINE_WIDTH_MAX_PIXELS,
-        getPosition: (d: Province) => d.coordinates,
+        getPosition: (d: Location) => d.coordinates,
         getRadius: 0,
-        getLineWidth: (d: Province) =>
-          (!d.maxDates.deaths
-            ? 0
-            : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              Math.sqrt(d.data[d.maxDates.deaths!].deaths!)) +
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          Math.sqrt(d.data[d.maxDates.confirmed!].confirmed!),
+        getLineWidth: (d: Location) => {
+          const lastDateDatum = getLastDateDatum(d);
+          return (
+            (!lastDateDatum?.deaths ? 0 : Math.sqrt(lastDateDatum.deaths)) +
+            Math.sqrt(lastDateDatum?.cases || 0)
+          );
+        },
         getLineColor: [0, 126, 96, 200],
         onHover: ({
-          object: province,
+          object: location,
           x,
           y,
         }: {
-          object: Province;
+          object: Location;
           x: number;
           y: number;
         }) => {
-          if (isClicked || !province) {
+          if (isClicked || !location) {
             setHovered(false);
             return;
           }
 
-          setSelectedProvince({
-            province,
+          setSelectedLocation({
+            location,
             x,
             y,
           });
           setHovered(true);
         },
         onClick: ({
-          object: province,
+          object: location,
           x,
           y,
         }: {
-          object: Province;
+          object: Location;
           x: number;
           y: number;
         }) => {
-          setSelectedProvince({
-            province,
+          setSelectedLocation({
+            location,
             x,
             y,
           });
@@ -260,7 +265,7 @@ const Map = (): JSX.Element | null => {
           return true;
         },
       }),
-    [covid19Data, country, confirmedLayerUid, isClicked],
+    [cdsData, locationLayerUid, isClicked],
   );
 
   const deathsLayer = useMemo(
@@ -317,7 +322,7 @@ const Map = (): JSX.Element | null => {
             setCountryHovered(false);
           }
         }, 20)}
-        layers={[countriesLayer, confirmedLayer, deathsLayer]}
+        layers={[countriesLayer, locationLayer, deathsLayer]}
         onClick={() => {
           setClicked(false);
         }}
@@ -329,11 +334,11 @@ const Map = (): JSX.Element | null => {
             deltaY: number;
           },
         ) => {
-          if (selectedProvince) {
-            setSelectedProvince({
-              province: selectedProvince.province,
-              x: selectedProvince.x,
-              y: selectedProvince.y,
+          if (selectedLocation) {
+            setSelectedLocation({
+              location: selectedLocation.location,
+              x: selectedLocation.x,
+              y: selectedLocation.y,
               deltaX: event.deltaX,
               deltaY: event.deltaY,
             });
@@ -356,8 +361,8 @@ const Map = (): JSX.Element | null => {
           height="100%"
         />
       </DeckGL>
-      {(isHovered || isClicked) && selectedProvince && (
-        <ProvinceTooltip selectedProvince={selectedProvince} />
+      {(isHovered || isClicked) && selectedLocation && (
+        <LocationTooltip selectedLocation={selectedLocation} />
       )}
       {isCountryHovered && selectedCountry && (
         <CountryTooltip selectedCountry={selectedCountry} />

@@ -1,4 +1,4 @@
-import { ApiStatus, ApiSummaryCountry } from './types';
+import { ApiStatus } from './types';
 
 export const STATUSES: ApiStatus[] = ['confirmed', 'deaths', 'recovered'];
 

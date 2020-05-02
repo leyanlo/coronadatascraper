@@ -1,22 +1,24 @@
 import { css } from '@emotion/core';
 import React, { useMemo } from 'react';
 
+import { DatumKind, FilteredCdsDatum } from '../../../scripts/types';
 import useWindowSize from '../../hooks/useWindowSize';
-import { STATUSES, TOOLTIP_OFFSET } from './constants';
-import { Province } from './types';
+import { TOOLTIP_OFFSET } from './constants';
+import { getLastDateDatum } from './utils';
 
-export type SelectedProvince = {
-  province: Province;
+export type Location = { name: string } & FilteredCdsDatum;
+export type SelectedLocation = {
+  location: Location;
   x: number;
   y: number;
   deltaX?: number;
   deltaY?: number;
 };
 
-const ProvinceTooltip = ({
-  selectedProvince: { province, x, y, deltaX = 0, deltaY = 0 },
+const LocationTooltip = ({
+  selectedLocation: { location, x, y, deltaX = 0, deltaY = 0 },
 }: {
-  selectedProvince: SelectedProvince;
+  selectedLocation: SelectedLocation;
 }): JSX.Element | null => {
   const { width, height } = useWindowSize();
 
@@ -48,7 +50,7 @@ const ProvinceTooltip = ({
           margin: 0 0 4px;
         `}
       >
-        {province.name}
+        {location.name}
       </h1>
       <ul
         css={css`
@@ -58,19 +60,22 @@ const ProvinceTooltip = ({
           font-size: 14px;
         `}
       >
-        {STATUSES.map(
-          (status): JSX.Element => (
-            <li key={status}>
-              {(province.maxDates[status] &&
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                province.data[province.maxDates[status]!][status]) ||
-                0}{' '}
-              {status}
-            </li>
-          ),
-        )}
+        {Object.keys(DatumKind)
+          .map(k => DatumKind[k as keyof typeof DatumKind])
+          .map(
+            (kind): JSX.Element => {
+              const lastDateDatum = getLastDateDatum(location);
+              return (
+                <li key={kind}>
+                  {(lastDateDatum && lastDateDatum[kind]?.toLocaleString()) ||
+                    0}{' '}
+                  {kind}
+                </li>
+              );
+            },
+          )}
       </ul>
     </section>
   );
 };
-export default ProvinceTooltip;
+export default LocationTooltip;
