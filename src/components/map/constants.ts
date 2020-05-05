@@ -1,7 +1,3 @@
-import { ApiStatus } from './types';
-
-export const STATUSES: ApiStatus[] = ['confirmed', 'deaths', 'recovered'];
-
 // avoid cursor touching tooltip
 export const TOOLTIP_OFFSET = 4;
 
