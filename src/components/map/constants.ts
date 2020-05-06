@@ -1,6 +1,12 @@
 // avoid cursor touching tooltip
 export const TOOLTIP_OFFSET = 4;
 
+export const COLORS = {
+  olive: [130, 152, 0],
+  forest: [0, 126, 96],
+  blue: [33, 56, 94],
+};
+
 // map alpha-3 country codes to CDS country names
 // generate with /scripts/generateCountries.ts
 export const COUNTRIES = {

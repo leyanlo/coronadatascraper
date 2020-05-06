@@ -7,15 +7,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { StaticMap } from 'react-map-gl';
 import { useUID } from 'react-uid';
 
-import { FilteredCdsData, Level } from '../../../scripts/types';
+import { FilteredCdsData } from '../../../scripts/types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { COUNTRIES } from './constants';
+import { COLORS, COUNTRIES } from './constants';
 import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import LocationTooltip, { Location, SelectedLocation } from './LocationTooltip';
-import { getLastDateDatum } from './utils';
+import { getLastDateDatum, lerp } from './utils';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -72,7 +72,7 @@ const Map = (): JSX.Element | null => {
           const alpha = !lastDateDatum?.cases
             ? 0
             : ~~(Math.log10(lastDateDatum.cases) * 20);
-          return [0, 126, 96, alpha];
+          return [...COLORS.olive, alpha];
         },
         onHover: ({
           object: d,
@@ -110,30 +110,38 @@ const Map = (): JSX.Element | null => {
       new ScatterplotLayer({
         id: locationLayerUid,
         data: Object.keys(cdsData)
+          // filter out countries and large states
+          .filter(k => {
+            const nCommas = k.split(', ').length - 1;
+            return k.endsWith('United States') || k.endsWith('United Kingdom')
+              ? nCommas > 1
+              : nCommas > 0;
+          })
           .map<Location>(k => ({
             ...cdsData[k],
             name: k
               .split(', ')
               .slice(0, -1)
               .join(', '),
-          }))
-          .filter(datum => datum.level !== Level.Country),
+          })),
         pickable: true,
-        stroked: true,
-        filled: false,
-        lineWidthUnits: 'pixels',
-        lineWidthMinPixels: 8,
-        lineWidthMaxPixels: LINE_WIDTH_MAX_PIXELS,
+        filled: true,
+        radiusScale: 2000,
+        radiusMinPixels: 4,
+        radiusMaxPixels: 100,
         getPosition: (d: Location) => d.coordinates,
-        getRadius: 0,
-        getLineWidth: (d: Location) => {
+        getRadius: (d: Location) => {
           const lastDateDatum = getLastDateDatum(d);
-          return (
-            (!lastDateDatum?.deaths ? 0 : Math.sqrt(lastDateDatum.deaths)) +
-            Math.sqrt(lastDateDatum?.cases || 0)
+          return Math.sqrt(lastDateDatum?.cases || 0);
+        },
+        getFillColor: (d: Location) => {
+          const lastDateDatum = getLastDateDatum(d);
+          return lerp(
+            [...COLORS.forest, 200],
+            [...COLORS.blue, 200],
+            Math.min(1, Math.log10(lastDateDatum?.cases || 1) / 10),
           );
         },
-        getLineColor: [33, 56, 94, 200],
         onHover: ({
           object: location,
           x,

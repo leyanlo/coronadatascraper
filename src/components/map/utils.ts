@@ -10,3 +10,6 @@ export const getLastDateDatum = (
   const lastDate = dateArray[dateArray.length - 1];
   return d.dates[lastDate] || null;
 };
+
+export const lerp = (v0: number[], v1: number[], t: number): number[] =>
+  v0.map((v, i) => (v * (1 - t) + v1[i]) * t);
