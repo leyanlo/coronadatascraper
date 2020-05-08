@@ -88,7 +88,7 @@ const Map = (): JSX.Element | null => {
           const countryCode = d.id as keyof typeof COUNTRIES;
           const countryName = COUNTRIES[countryCode];
           setSelectedCountry({
-            countryName,
+            countryName: countryName || countryCode,
             countryData: cdsData[countryName],
             x,
             y,
