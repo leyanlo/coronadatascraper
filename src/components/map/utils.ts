@@ -1,4 +1,5 @@
 import { FilteredCdsDateDatum, FilteredCdsDatum } from '../../../scripts/types';
+import { COLOR_RANGE } from './constants';
 
 export const getLastDateDatum = (
   d: FilteredCdsDatum | void,
@@ -11,5 +12,12 @@ export const getLastDateDatum = (
   return d.dates[lastDate] || null;
 };
 
-export const lerp = (v0: number[], v1: number[], t: number): number[] =>
-  v0.map((v, i) => (v * (1 - t) + v1[i]) * t);
+export const getCountryColor = (count: number | void): number[] => [
+  ...(!count ? [255, 255, 255] : COLOR_RANGE[Math.min(5, ~~Math.log10(count))]),
+  100,
+];
+
+export const getLocationColor = (count: number | void): number[] => [
+  ...(!count ? [255, 255, 255] : COLOR_RANGE[Math.min(5, ~~Math.log10(count))]),
+  200,
+];

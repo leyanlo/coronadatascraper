@@ -10,12 +10,12 @@ import { useUID } from 'react-uid';
 import { FilteredCdsData } from '../../../scripts/types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { COLORS, COUNTRIES } from './constants';
+import { COUNTRIES } from './constants';
 import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import LocationTooltip, { Location, SelectedLocation } from './LocationTooltip';
-import { getLastDateDatum, lerp } from './utils';
+import { getCountryColor, getLastDateDatum, getLocationColor } from './utils';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -69,10 +69,7 @@ const Map = (): JSX.Element | null => {
           const countryName = COUNTRIES[countryCode];
           const countryData = cdsData[countryName];
           const lastDateDatum = getLastDateDatum(countryData);
-          const alpha = !lastDateDatum?.cases
-            ? 0
-            : ~~(Math.log10(lastDateDatum.cases) * 20);
-          return [...COLORS.olive, alpha];
+          return getCountryColor(lastDateDatum?.cases || lastDateDatum?.deaths);
         },
         onHover: ({
           object: d,
@@ -125,6 +122,8 @@ const Map = (): JSX.Element | null => {
               .join(', '),
           })),
         pickable: true,
+        lineWidthUnits: 'pixels',
+        stroked: true,
         filled: true,
         radiusScale: 2000,
         radiusMinPixels: 4,
@@ -132,14 +131,12 @@ const Map = (): JSX.Element | null => {
         getPosition: (d: Location) => d.coordinates,
         getRadius: (d: Location) => {
           const lastDateDatum = getLastDateDatum(d);
-          return Math.sqrt(lastDateDatum?.cases || 0);
+          return Math.sqrt(lastDateDatum?.cases || lastDateDatum?.deaths || 0);
         },
         getFillColor: (d: Location) => {
           const lastDateDatum = getLastDateDatum(d);
-          return lerp(
-            [...COLORS.forest, 200],
-            [...COLORS.blue, 200],
-            Math.min(1, Math.log10(lastDateDatum?.cases || 1) / 10),
+          return getLocationColor(
+            lastDateDatum?.cases || lastDateDatum?.deaths,
           );
         },
         onHover: ({
