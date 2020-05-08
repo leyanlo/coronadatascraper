@@ -12,12 +12,5 @@ export const getLastDateDatum = (
   return d.dates[lastDate] || null;
 };
 
-export const getCountryColor = (count: number | void): number[] => [
-  ...(!count ? [255, 255, 255] : COLOR_RANGE[Math.min(5, ~~Math.log10(count))]),
-  100,
-];
-
-export const getLocationColor = (count: number | void): number[] => [
-  ...(!count ? [255, 255, 255] : COLOR_RANGE[Math.min(5, ~~Math.log10(count))]),
-  200,
-];
+export const getColor = (count: number | void): number[] =>
+  !count ? [255, 255, 255] : COLOR_RANGE[Math.min(5, ~~Math.log10(count))];

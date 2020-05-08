@@ -15,7 +15,7 @@ import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import LocationTooltip, { Location, SelectedLocation } from './LocationTooltip';
-import { getCountryColor, getLastDateDatum, getLocationColor } from './utils';
+import { getColor, getLastDateDatum } from './utils';
 
 const MAPBOX_ACCESS_TOKEN = process.env.GATSBY_MAPBOX_ACCESS_TOKEN;
 
@@ -62,6 +62,7 @@ const Map = (): JSX.Element | null => {
         id: countriesLayerUid,
         data: countriesGeoJson,
         pickable: true,
+        opacity: 0.1,
         stroked: true,
         lineWidthUnits: 'pixels',
         getFillColor: (d: Feature<null, { name: string }>) => {
@@ -69,7 +70,7 @@ const Map = (): JSX.Element | null => {
           const countryName = COUNTRIES[countryCode];
           const countryData = cdsData[countryName];
           const lastDateDatum = getLastDateDatum(countryData);
-          return getCountryColor(lastDateDatum?.cases || lastDateDatum?.deaths);
+          return getColor(lastDateDatum?.cases || lastDateDatum?.deaths);
         },
         onHover: ({
           object: d,
@@ -122,6 +123,7 @@ const Map = (): JSX.Element | null => {
               .join(', '),
           })),
         pickable: true,
+        opacity: 0.5,
         lineWidthUnits: 'pixels',
         stroked: true,
         filled: true,
@@ -135,9 +137,7 @@ const Map = (): JSX.Element | null => {
         },
         getFillColor: (d: Location) => {
           const lastDateDatum = getLastDateDatum(d);
-          return getLocationColor(
-            lastDateDatum?.cases || lastDateDatum?.deaths,
-          );
+          return getColor(lastDateDatum?.cases || lastDateDatum?.deaths);
         },
         onHover: ({
           object: location,
