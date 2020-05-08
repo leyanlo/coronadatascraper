@@ -41,5 +41,4 @@ const updateCdsData = async (): Promise<void> => {
 
   filterCdsData();
 };
-// noinspection JSUnusedGlobalSymbols
-export default updateCdsData;
+updateCdsData().then(() => console.log('Done.'));
