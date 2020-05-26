@@ -283,4 +283,4 @@ const generateCountries = (): Countries => {
       return acc;
     }, {} as Countries);
 };
-export default generateCountries;
+console.log(generateCountries());
