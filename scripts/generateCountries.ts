@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { DATA_PATH } from './constants';
+import { CONSTANTS_PATH, DATA_PATH } from './constants';
 import { CdsData } from './types';
 
 // map alpha-2 codes to alpha-3 codes
@@ -258,7 +258,7 @@ const ALPHA2_TO_ALPHA3 = {
 };
 
 type Countries = { [alpha3: string]: string };
-const generateCountries = (): Countries => {
+const generateCountries = (): void => {
   const data: CdsData = JSON.parse(
     (fs.readFileSync(DATA_PATH) as unknown) as string,
   );
@@ -276,11 +276,15 @@ const generateCountries = (): Countries => {
   }, {} as Countries);
 
   // sort keys
-  return Object.keys(countries)
+  const sortedCountries = Object.keys(countries)
     .sort()
     .reduce((acc, key) => {
       acc[key] = countries[key];
       return acc;
     }, {} as Countries);
+
+  const countryPath = `${CONSTANTS_PATH}/countries.json`;
+  fs.writeFileSync(countryPath, JSON.stringify(sortedCountries));
+  console.log(`Wrote country constants to ${countryPath}.`);
 };
-console.log(generateCountries());
+export default generateCountries;

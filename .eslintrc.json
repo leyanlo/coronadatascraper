@@ -46,5 +46,14 @@
 
     // Allow array index in keys
     "react/no-array-index-key": "off"
-  }
+  },
+
+  "overrides": [
+    {
+      "files": ["scripts/**/*.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }

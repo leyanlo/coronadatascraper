@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import fs from 'fs';
 
 import { DATA_PATH } from './constants';
 import fetchCdsData from './fetchCdsData';
 import filterCdsData from './filterCdsData';
+import generateCountries from './generateCountries';
 import { CdsData } from './types';
 
 const updateCdsData = async (): Promise<void> => {
@@ -40,5 +40,6 @@ const updateCdsData = async (): Promise<void> => {
   }
 
   filterCdsData();
+  generateCountries();
 };
 updateCdsData().then(() => console.log('Done.'));

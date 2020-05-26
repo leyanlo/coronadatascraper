@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import fs from 'fs';
 
 import { DATA_PATH, FILTERED_DATA_PATH } from './constants';
