@@ -1,3 +1,4 @@
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
 import { css } from '@emotion/core';
@@ -10,7 +11,7 @@ import { useUID } from 'react-uid';
 import { FilteredCdsData } from '../../../scripts/types';
 import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
-import { COUNTRIES } from './constants';
+import { COLOR_RANGE, COUNTRIES } from './constants';
 import countriesGeoJson from './countries.geo.json';
 import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
@@ -40,8 +41,29 @@ const Map = (): JSX.Element | null => {
   const [isClicked, setClicked] = useState<boolean>(false);
   const [isCountryHovered, setCountryHovered] = useState<boolean>(false);
   const [cdsData, setCdsData] = useState<FilteredCdsData | null>(null);
+  const filteredCdsData = useMemo(
+    () =>
+      cdsData &&
+      Object.keys(cdsData)
+        // filter out countries and large states
+        .filter(k => {
+          const nCommas = k.split(', ').length - 1;
+          return k.endsWith('United States') || k.endsWith('United Kingdom')
+            ? nCommas > 1
+            : nCommas > 0;
+        })
+        .map<Location>(k => ({
+          ...cdsData[k],
+          name: k
+            .split(', ')
+            .slice(0, -1)
+            .join(', '),
+        })),
+    [cdsData],
+  );
 
   const countriesLayerUid = useUID();
+  const heatmapLayerUid = useUID();
   const locationLayerUid = useUID();
 
   useEffect(() => {
@@ -102,43 +124,39 @@ const Map = (): JSX.Element | null => {
     [cdsData, countriesLayerUid, selectedCountry],
   );
 
+  const heatmapLayer = useMemo(
+    () =>
+      filteredCdsData &&
+      new HeatmapLayer({
+        id: heatmapLayerUid,
+        data: filteredCdsData,
+        colorRange: COLOR_RANGE,
+        colorDomain: [0.01, 1],
+        getPosition: (d: Location) => d.coordinates,
+        getWeight: (d: Location) => {
+          const lastDateDatum = getLastDateDatum(d);
+          return Math.log10(
+            lastDateDatum?.cases || lastDateDatum?.deaths || 0.1,
+          );
+        },
+      }),
+    [filteredCdsData, heatmapLayerUid],
+  );
+
   const locationLayer = useMemo(
     () =>
-      cdsData &&
+      filteredCdsData &&
       new ScatterplotLayer({
         id: locationLayerUid,
-        data: Object.keys(cdsData)
-          // filter out countries and large states
-          .filter(k => {
-            const nCommas = k.split(', ').length - 1;
-            return k.endsWith('United States') || k.endsWith('United Kingdom')
-              ? nCommas > 1
-              : nCommas > 0;
-          })
-          .map<Location>(k => ({
-            ...cdsData[k],
-            name: k
-              .split(', ')
-              .slice(0, -1)
-              .join(', '),
-          })),
+        data: filteredCdsData,
         pickable: true,
-        opacity: 0.5,
-        lineWidthUnits: 'pixels',
-        stroked: true,
-        filled: true,
-        radiusScale: 2000,
-        radiusMinPixels: 4,
-        radiusMaxPixels: 100,
+        radiusMaxPixels: 32,
         getPosition: (d: Location) => d.coordinates,
-        getRadius: (d: Location) => {
-          const lastDateDatum = getLastDateDatum(d);
-          return Math.sqrt(lastDateDatum?.cases || lastDateDatum?.deaths || 0);
-        },
-        getFillColor: (d: Location) => {
-          const lastDateDatum = getLastDateDatum(d);
-          return getColor(lastDateDatum?.cases || lastDateDatum?.deaths);
-        },
+        getRadius: 10000,
+        getFillColor: (d: Location) => [
+          ...COLOR_RANGE[5],
+          d.name === selectedLocation?.location.name ? 196 : 64,
+        ],
         onHover: ({
           object: location,
           x,
@@ -177,8 +195,11 @@ const Map = (): JSX.Element | null => {
           setClicked(true);
           return true;
         },
+        updateTriggers: {
+          getFillColor: [selectedLocation],
+        },
       }),
-    [cdsData, locationLayerUid, isClicked],
+    [filteredCdsData, locationLayerUid, selectedLocation, isClicked],
   );
 
   return (
@@ -194,7 +215,7 @@ const Map = (): JSX.Element | null => {
             setCountryHovered(false);
           }
         }, 20)}
-        layers={[countriesLayer, locationLayer]}
+        layers={[countriesLayer, heatmapLayer, locationLayer]}
         onClick={() => {
           setClicked(false);
         }}
