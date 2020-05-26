@@ -13,7 +13,6 @@ import Logo from '../../assets/logo.svg';
 import Octicon from '../../assets/octicon.svg';
 import { COLOR_RANGE, COUNTRIES } from './constants';
 import countriesGeoJson from './countries.geo.json';
-import CountryTooltip, { SelectedCountry } from './CountryTooltip';
 import { linkCss, linkIconCss } from './css';
 import LocationTooltip, { Location, SelectedLocation } from './LocationTooltip';
 import { getColor, getLastDateDatum } from './utils';
@@ -26,20 +25,13 @@ const INITIAL_VIEW_STATE = {
   zoom: 3.8,
 };
 
-const LINE_WIDTH_MAX_PIXELS = 100;
-
 const Map = (): JSX.Element | null => {
   const [
     selectedLocation,
     setSelectedLocation,
   ] = useState<SelectedLocation | null>(null);
-  const [
-    selectedCountry,
-    setSelectedCountry,
-  ] = useState<SelectedCountry | null>(null);
   const [isHovered, setHovered] = useState<boolean>(false);
   const [isClicked, setClicked] = useState<boolean>(false);
-  const [isCountryHovered, setCountryHovered] = useState<boolean>(false);
   const [cdsData, setCdsData] = useState<FilteredCdsData | null>(null);
   const filteredCdsData = useMemo(
     () =>
@@ -53,11 +45,11 @@ const Map = (): JSX.Element | null => {
             : nCommas > 0;
         })
         .map<Location>(k => ({
-          ...cdsData[k],
           name: k
             .split(', ')
             .slice(0, -1)
             .join(', '),
+          data: cdsData[k],
         })),
     [cdsData],
   );
@@ -103,25 +95,46 @@ const Map = (): JSX.Element | null => {
           x: number;
           y: number;
         }) => {
-          if (!d) {
-            setCountryHovered(false);
+          if (isClicked || !d) {
+            setHovered(false);
             return;
           }
+
           const countryCode = d.id as keyof typeof COUNTRIES;
           const countryName = COUNTRIES[countryCode];
-          setSelectedCountry({
-            countryName: countryName || countryCode,
-            countryData: cdsData[countryName],
+          setSelectedLocation({
+            name: countryName || countryCode,
+            data: cdsData[countryName],
             x,
             y,
           });
-          setCountryHovered(true);
+          setHovered(true);
+        },
+        onClick: ({
+          object: d,
+          x,
+          y,
+        }: {
+          object: Feature<null, { name: string }>;
+          x: number;
+          y: number;
+        }) => {
+          const countryCode = d.id as keyof typeof COUNTRIES;
+          const countryName = COUNTRIES[countryCode];
+          setSelectedLocation({
+            name: countryName || countryCode,
+            data: cdsData[countryName],
+            x,
+            y,
+          });
+          setClicked(true);
+          return true;
         },
         updateTriggers: {
-          getFillColor: [cdsData, countriesLayerUid, selectedCountry],
+          onHover: [isClicked],
         },
       }),
-    [cdsData, countriesLayerUid, selectedCountry],
+    [cdsData, countriesLayerUid, isClicked],
   );
 
   const heatmapLayer = useMemo(
@@ -132,9 +145,9 @@ const Map = (): JSX.Element | null => {
         data: filteredCdsData,
         colorRange: COLOR_RANGE,
         colorDomain: [0.01, 1],
-        getPosition: (d: Location) => d.coordinates,
-        getWeight: (d: Location) => {
-          const lastDateDatum = getLastDateDatum(d);
+        getPosition: ({ data }: Location) => data.coordinates,
+        getWeight: ({ data }: Location) => {
+          const lastDateDatum = getLastDateDatum(data);
           return Math.log10(
             lastDateDatum?.cases || lastDateDatum?.deaths || 0.1,
           );
@@ -150,12 +163,13 @@ const Map = (): JSX.Element | null => {
         id: locationLayerUid,
         data: filteredCdsData,
         pickable: true,
+        radiusMinPixels: 2,
         radiusMaxPixels: 32,
-        getPosition: (d: Location) => d.coordinates,
+        getPosition: ({ data }: Location) => data.coordinates,
         getRadius: 10000,
-        getFillColor: (d: Location) => [
+        getFillColor: ({ name }: Location) => [
           ...COLOR_RANGE[5],
-          d.name === selectedLocation?.location.name ? 196 : 64,
+          name === selectedLocation?.name ? 196 : 64,
         ],
         onHover: ({
           object: location,
@@ -172,7 +186,7 @@ const Map = (): JSX.Element | null => {
           }
 
           setSelectedLocation({
-            location,
+            ...location,
             x,
             y,
           });
@@ -188,7 +202,7 @@ const Map = (): JSX.Element | null => {
           y: number;
         }) => {
           setSelectedLocation({
-            location,
+            ...location,
             x,
             y,
           });
@@ -197,27 +211,28 @@ const Map = (): JSX.Element | null => {
         },
         updateTriggers: {
           getFillColor: [selectedLocation],
+          onHover: [isClicked],
         },
       }),
-    [filteredCdsData, locationLayerUid, selectedLocation, isClicked],
+    [filteredCdsData, locationLayerUid, isClicked, selectedLocation],
   );
 
   return (
     <>
       <DeckGL
-        getCursor={() => (isHovered || isCountryHovered ? 'pointer' : 'grab')}
+        getCursor={() => (isHovered ? 'pointer' : 'grab')}
         initialViewState={INITIAL_VIEW_STATE}
         controller
         onViewStateChange={throttle(({ interactionState: { isZooming } }) => {
           if (isZooming) {
             setClicked(false);
             setHovered(false);
-            setCountryHovered(false);
           }
         }, 20)}
         layers={[countriesLayer, heatmapLayer, locationLayer]}
         onClick={() => {
           setClicked(false);
+          setSelectedLocation(null);
         }}
         onDrag={throttle((
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,19 +244,7 @@ const Map = (): JSX.Element | null => {
         ) => {
           if (selectedLocation) {
             setSelectedLocation({
-              location: selectedLocation.location,
-              x: selectedLocation.x,
-              y: selectedLocation.y,
-              deltaX: event.deltaX,
-              deltaY: event.deltaY,
-            });
-          }
-          if (selectedCountry) {
-            setSelectedCountry({
-              countryName: selectedCountry.countryName,
-              countryData: selectedCountry.countryData,
-              x: selectedCountry.x,
-              y: selectedCountry.y,
+              ...selectedLocation,
               deltaX: event.deltaX,
               deltaY: event.deltaY,
             });
@@ -256,9 +259,6 @@ const Map = (): JSX.Element | null => {
       </DeckGL>
       {(isHovered || isClicked) && selectedLocation && (
         <LocationTooltip selectedLocation={selectedLocation} />
-      )}
-      {isCountryHovered && selectedCountry && (
-        <CountryTooltip selectedCountry={selectedCountry} />
       )}
       <section
         css={css`

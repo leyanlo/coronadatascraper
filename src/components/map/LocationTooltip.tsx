@@ -6,9 +6,8 @@ import useWindowSize from '../../hooks/useWindowSize';
 import { TOOLTIP_OFFSET } from './constants';
 import { getLastDateDatum } from './utils';
 
-export type Location = { name: string } & FilteredCdsDatum;
-export type SelectedLocation = {
-  location: Location;
+export type Location = { name: string; data: FilteredCdsDatum };
+export type SelectedLocation = Location & {
   x: number;
   y: number;
   deltaX?: number;
@@ -16,10 +15,11 @@ export type SelectedLocation = {
 };
 
 const LocationTooltip = ({
-  selectedLocation: { location, x, y, deltaX = 0, deltaY = 0 },
+  selectedLocation,
 }: {
   selectedLocation: SelectedLocation;
 }): JSX.Element | null => {
+  const { name, data, x, y, deltaX = 0, deltaY = 0 } = selectedLocation;
   const { width, height } = useWindowSize();
 
   const nextX = x + deltaX;
@@ -50,7 +50,7 @@ const LocationTooltip = ({
           margin: 0 0 4px;
         `}
       >
-        {location.name}
+        {name}
       </h1>
       <ul
         css={css`
@@ -60,20 +60,23 @@ const LocationTooltip = ({
           font-size: 14px;
         `}
       >
-        {Object.keys(DatumKind)
-          .map(k => DatumKind[k as keyof typeof DatumKind])
-          .map(
-            (kind): JSX.Element => {
-              const lastDateDatum = getLastDateDatum(location);
-              return (
-                <li key={kind}>
-                  {(lastDateDatum && lastDateDatum[kind]?.toLocaleString()) ||
-                    0}{' '}
-                  {kind}
-                </li>
-              );
-            },
-          )}
+        {data
+          ? Object.keys(DatumKind)
+              .map(k => DatumKind[k as keyof typeof DatumKind])
+              .map(
+                (kind): JSX.Element => {
+                  const lastDateDatum = getLastDateDatum(data);
+                  return (
+                    <li key={kind}>
+                      {(lastDateDatum &&
+                        lastDateDatum[kind]?.toLocaleString()) ||
+                        0}{' '}
+                      {kind}
+                    </li>
+                  );
+                },
+              )
+          : 'No data'}
       </ul>
     </section>
   );
