@@ -7,7 +7,7 @@ const filterDates = (dates: CdsDatum['dates']): CdsDatum['dates'] =>
   Object.keys(dates).reduce((acc, k) => {
     const { cases, deaths } = dates[k];
     // skip empty dates if acc is empty
-    if (!cases && !deaths && !Object.keys(acc).length) {
+    if (!cases && !deaths) {
       return acc;
     }
 
