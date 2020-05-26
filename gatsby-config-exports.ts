@@ -23,7 +23,7 @@ export const plugins = [
   {
     resolve: `gatsby-plugin-google-analytics`,
     options: {
-      trackingId: 'UA-126651057-3',
+      trackingId: 'UA-126651057-4',
       head: true,
       respectDNT: true,
     },
