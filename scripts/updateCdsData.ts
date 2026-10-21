@@ -29,11 +29,11 @@ const updateCdsData = async (): Promise<void> => {
     );
   } catch (err) {
     if (
-      err.message === `ENOENT: no such file or directory, open '${DATA_PATH}'`
+      (err instanceof Error ? err.message : String(err)) === `ENOENT: no such file or directory, open '${DATA_PATH}'`
     ) {
       console.log('Corona Data Scraper data not found.');
     } else {
-      console.log(err.message);
+      console.log((err instanceof Error ? err.message : String(err)));
     }
     console.log('Fetching new Corona Data Scraper data.');
     await fetchCdsData();

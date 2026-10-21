@@ -48,11 +48,11 @@ const filterCdsData = (): void => {
     );
   } catch (err) {
     if (
-      err.message === `ENOENT: no such file or directory, open '${DATA_PATH}'`
+      (err instanceof Error ? err.message : String(err)) === `ENOENT: no such file or directory, open '${DATA_PATH}'`
     ) {
       console.error('Corona Data Scraper data not found.');
     } else {
-      console.error(err.message);
+      console.error((err instanceof Error ? err.message : String(err)));
     }
   }
 };

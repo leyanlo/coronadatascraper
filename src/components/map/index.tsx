@@ -1,7 +1,7 @@
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 import DeckGL from '@deck.gl/react';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import { Feature } from 'geojson';
 import throttle from 'just-throttle';
 import React, { useEffect, useMemo, useState } from 'react';
